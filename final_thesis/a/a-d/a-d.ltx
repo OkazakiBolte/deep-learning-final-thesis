@@ -1,0 +1,196 @@
+\documentclass[a4paper,11pt,oneside,openany,uplatex]{jsbook}
+\input{/Users/bolte/Desktop/my_palace/programming/深層学習/卒業論文/settings.ltx}
+\graphicspath{{/Users/bolte/Desktop/my_palace/programming/深層学習/卒業論文/fig/}}
+
+
+
+
+
+\begin{document}
+\chapter{フィードフォーワード・ニューラルネットワーク}
+%神経細胞との類似を書く
+  \section{アーキテクチャとニューラルネットワークの働き} \label{sec : アーキテクチャとニューラルネットワークの働き}
+  ニューラルネットワーク全体の構造のことを\daiji{アーキテクチャ}（architecture）という。ニューラルネットワークは主に\daiji{入力層}（input layer）、\daiji{隠れ層}（hidden layer）、\daiji{出力層}（output layer）から構成される。それぞれの層は本質的にはベクトルや行列、テンソルであり、その成分を\daiji{ユニット}（unit）とよぶ。各層は１つ前の層の関数になっており、全体として連鎖的な構造をなす。この連鎖の長さを\daiji{深さ}（depth）とよび、深層学習という名前はこの用語に由来している。
+
+入力から様々な計算を経て出力がはき出される。出力がモデル自体に戻すようなフィードバックがないとき、このニューラルネットワークを\daiji{フィードフォーワード・ニューラルネットワーク}、\daiji{順伝搬型ニューラルネットワーク}（feedforward neural networks）などとよぶ。フィードフォーワード・ニューラルネットワークの目的はある関数$f$を近似することである。本稿においては「手書き数字の書かれた画像データからその数字を予測する」ような関数$f$をフィードフォーワード・ニューラルネットワークで近似することが目的である。
+
+$n$個の入力$x_{1} , \ldots , x_{n}$に対して、パラメータ$b , w_{1} , \ldots , w_{n}$とある\daiji{活性化関数}（activation function）$\varphi$を用いて$\varphi \qty(b + w_{1} x_{1} + \cdots + w_{n} x_{n})$を出力するようなシステムを（単純）\daiji{パーセプトロン}（perceptron）あるいは\daiji{人工ニューロン}（articicial neuron）という。単純パーセプトロンが複数集まって層をなし、さらにその層が連鎖的に重なったものを\daiji{多層パーセプトロン }（multiple perceptrons, \daiji{MLP}）という。フィードフォーワード・ニューラルネットワークはMLPともみなせる。\\
+
+%シンプルなフィードフォーワード・ニューラルネットワークの例を図\ref{fig : NN-example}に示す。このニューラルネットワークに図\ref{fig : handwritten-digit-five}の手で書かれた「５」の字を認識させることを考える。
+図\ref{fig : handwritten-digit-five}の手で書かれた「５」の字を、図\ref{fig : NN-example}に示したシンプルなフィードフォーワード・ニューラルネットワークに認識させることを考える。
+図\ref{fig : handwritten-digit-five}は$28 \times 28 = 784$ピクセルのグレースケールの画像で、それぞれのピクセルが$0$から$255$までの黒さに対応した値を持っている。この$28 \times 28$の配列を$784$次元のベクトルに変換して、これを入力$\vb*{x}$とする。また図\ref{fig : handwritten-digit-five}の画像には$ y = 5 $という正解を表すラベルがついている。%これは図\ref{fig : handwritten-digit-five}の手で書かれた「５」の文字を
+  %2枚の図
+\begin{figure}[htbp]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=40mm]{fig-handwritten-digit-five.png}
+  \end{center}
+  \caption{手書き数字の「５」}
+  \label{fig : handwritten-digit-five}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=75mm]{fig-NN-example.png}
+  \end{center}
+  \caption{ニューラルネットワークの例}
+  \label{fig : NN-example}
+ \end{minipage}
+\end{figure}
+
+隠れ層は図\ref{fig : NN-example}の例では１層で、これはベクトルである。
+入力$\vb*{x}$と重みのパラメータ$W^{(1)}$の行列積$\vb*{u}^{(1)} = W^{(1)} \vb*{x}$を計算し、そのそれぞれの成分について活性化関数$ \varphi_{1} $を施したベクトルを隠れ層$\vb*{h} = \varphi_{1}\qty( \vb*{u}^{(1)} ) = \varphi_{1}\qty( W^{(1)} \vb*{x})$としている。図\ref{fig : NN-example}のユニット間を結ぶ線分が$W^{(1)}$の成分を表現している。$\vb*{h}$にさらにパラメータ$W^{(2)}$をかけて活性化関数$\varphi_{2}$に通すことで、出力のベクトル$\hat{\vb*{y}} = \varphi_{2} \qty( \vb*{u}^{(2)} ) = \varphi_{2} \qty( W^{(2)}  \vb*{h})$を得ている。$\hat{\vb*{y}}$は$0$から$9$までの数字に対応した$10$成分を持つベクトルで、各成分は入力のラベルがその数字である確率を表している。図\ref{fig : NN-example}では確率が最も高いクラス$5$と判定されるが、クラス$4$やクラス$9$である確率もあることを表現した。ニューラルネットワークではこのような流れで多クラス分類を行う。
+
+次にニューラルネットワークを訓練させる方法を説明する。データのラベル$y$に対応した\daiji{ワンホットベクトル}（one-hot vector）と出力$\hat{\vb*{y}}$を用いて、それらの違いを表現する\daiji{コスト関数}（cost function）を作る。この例では$y = 5$であるから、ワンホットベクトルは第６成分のみが$1$でその他の成分が$0$のベクトルになる。出力$\hat{\vb*{y}}$は$W^{(1)}$と$W^{(2)}$の関数であるから、コスト関数$J$もそれらの関数になる。コスト関数としては平均二乗誤差や交差エントロピーを採用することが多い。多数の訓練データを用いて、コスト関数$J \qty( W^{(1)} , W^{(2)} )$が最小となるようなパラメータ$W^{(1)}$と$W^{(2)}$を学習することで、その汎化性能が向上していく。
+
+コスト関数を計算するまでの流れは、\daiji{グラフ}（graph）を用いて図\ref{fig : graph-1}のようにも図示することができる。入力層などの各変数を\daiji{ノード}（node）として表し、それらの依存構造を矢印の向きで表している。ノードのことを神経細胞を意味する\daiji{ニューロン}（neuron）とよぶこともある。ノードの位置関係はさほど重要ではなく、この依存関係が明確であればよい。各変数間の演算はタイプライタ体で書き込んである。\texttt{matmul}は行列積の演算を表している。\texttt{relu}、\texttt{softmax}は活性化関数$\varphi_{1} , \varphi_{2}$ををそれぞれ\daiji{ReLU}（rectified linear function）、\daiji{ソフトマックス関数}（softmax function）としたことを示している。\texttt{cross\_entropy}でコスト関数として交差エントロピーを採用したことを表した。
+%１枚の画像
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=90mm]{fig-graph-1.png}
+\caption{件のニューラルネットワークに対するグラフ}
+\label{fig : graph-1}
+\end{figure}
+
+コスト関数の最適化に用いるアルゴリズムには様々あるが、本稿ではミニバッチ勾配降下法やAdamなど、その勾配を用いて最適化を図るアルゴリズムを使用する。
+
+  \section{入力層}
+  図\ref{fig : NN-example}の例では、入力は１つの訓練データを変形したベクトルであった。しかし入力は行列やテンソルであってもよい。コスト関数の最適化アルゴリズムとしてミニバッチ勾配降下法を用いるならば、複数の訓練データを用いて作られた計画行列$X$が１回の学習における入力になる。例えば手書き数字の認識をするならば、ミニバッチに選ばれた訓練データ数を$m '$個として、計画行列は
+  \begin{equation}
+  X = \mqty[ x_{1}^{(1)} & \cdots & x_{784}^{(1)} \\ \vdots　&  &　\vdots  \\  x_{1}^{\qty(m')} & \cdots & x_{784}^{\qty(m')}  ] = \mqty[ {\vb*{x}^{\qty(1)}}^\T  \\ \vdots \\  {\vb*{x}^{\qty(m')}}^\T]  \label{eq : design-matrix}
+ \end{equation}
+  のようになる。
+
+  \section{隠れ層}
+    %\subsection{万能近似定理}
+    隠れ層の層数を\daiji{深さ}（depth）といい、隠れ層のユニット数のことを\daiji{幅}（width）という。ニューラルネットワークのアーキテクチャを決めることは、この深さと幅を決めることである。経験的に、隠れ層１層であっても目的の関数を十分よく近似できることは知られており、\daiji{万能近似定理}（universal approximation theorem）\cite{bib : uat}が理論的にそのようなニューラルネットワークが存在できることを保証している。しかし存在が認められたニューラルネットワークを実際に学習させることができるとは限らず、またその幅を非現実的に大きくしなければいけない可能性もある。その場合はニューラルネットワークを深くする、つまり隠れ層を増やすことでそれらの問題を解決できることがある。\\
+    %\subsection{活性化関数}
+
+    ニューラルネットワークの人工ニューロンは、入力に線形変換を施した後に非線形関数または恒等関数（引数そのものを返す関数）を適用して出力する。この関数を\daiji{活性化関数}（activation function）という。コスト関数の微分を用いてニューラルネットワークの学習を行うため、導関数の性質がよい関数が活性化関数として用いられる。ここでは本稿の手書き数字の認識に用いたReLU、シグモイド関数、ソフトマックス関数という３つの活性化関数を紹介する。
+
+
+      %\subsubsection{ReLU}
+      \daiji{正規化線形関数}（rectified linear function）の定義は
+      \begin{equation}
+      \varphi \qty( x ) = \mathrm{max} \qty{ 0 , x } \label{eq : relu}
+      \end{equation}
+      である。すなわち$x \le 0$ならば$0$を返し、$x > 0$ならば$x$自身を返す関数である。これを使用したユニットのことを正規化線形ユニット（rectified linear unit, \daiji{ReLU}）というが、関数そのものもReLUとよぶことが多い。ReLUの導関数は$x < 0$ならば$0$、$x > 0$ならば$1$で、$x = 0$では定義されない。このように導関数が定数であるため計算コストが小さく、正の入力に対しては\daiji{勾配消失}（節\ref{subsec : vanishing-gradient}）が起こりにくいという利点があるため、広く用いられている。しかし負の入力については導関数が$0$であるため%\red{勾配降下法（「勾配降下法」という単語は「勾配法」に変える）}
+      による学習が進まない。
+
+    % \subsubsection{$\tanh (x)$}
+     %\red{ここは加筆が望まれています？？？}
+
+     % \subsubsection{シグモイド関数}
+      \begin{equation}
+      \varphi \qty( x ) = \frac{1}{1 + \exp(-x)} \label{eq : sigmoid}
+      \end{equation}
+      という関数を\daiji{標準シグモイド関数}（standard sigmoid function）、\daiji{ロジスティック・シグモイド関数}（logistic sigmoid function）、あるいは単に\daiji{シグモイド関数}（sigmoid function）などという。本稿では一貫してシグモイド関数とよび、式(\ref{eq : sigmoid})の右辺を$\sigma (x)$と表記する。シグモイド関数の導関数は
+      $\sigma ' (x) = \qty(1 - \sigma(x)) \sigma(x)$
+      と簡単であるから、勾配降下法と相性がよい。しかし引数の絶対値が大きいとその勾配は小さくなるため、勾配消失が起こりやすい。また導関数の値は最大でも$0.25$しか取らないため、勾配降下法による収束が遅いというデメリットがある。$\tanh(x)$を代わりに使うことで勾配降下法による収束はいくらか早くなるが、勾配消失問題は解決されていない。このため現在ではReLUがより多く用いられる。
+      %\subsubsection{ソフトマックス関数}
+      \begin{equation}
+      \varphi \qty( z_{k} ) = \frac{\exp(z_{k})}{ \sum_{k = 0}^{K} \exp(z_{k}) } \label{eq : softmax}
+      \end{equation}
+      という関数を\daiji{ソフトマックス関数}（softmax function）という。これは手書き数字の認識などの多クラス分類の出力層で用いられる。分類するクラスが$k = 0 , 1 , \ldots , K$の$( K + 1 )$種類であるとき、それらに対応した成分を持つベクトル$\vb*{z} = \qty[ z_{0} , \ldots , z_{K} ]^{\T}$が入力である。式(\ref{eq : softmax})の右辺を$\mathrm{softmax}\qty( \vb*{z} )_{k}$のように表記する。すべてのクラスについて$\mathrm{softmax}\qty( \vb*{z} )_{k}$の総和を取れば$1$になることから、確率として取り扱えることが利点である。しかし%指数関数を用いるため、引数が大きい数だとおー
+      入力値の間の差が大きいと、勾配が消失して学習が進まない。このことを回避するためには、定数を引数から引いても変わらないという性質を使って、引数からあらかじめ$\max_{k} z_{k}$を引いてからソフトマックス関数を使えばよい。導関数は
+      $$ \pdv{ z_{j} }\mathrm{softmax}\qty( \vb*{z} )_{i} = \qty( \delta_{ij} - \mathrm{softmax}\qty( \vb*{z} )_{j} ) \mathrm{softmax}\qty( \vb*{z} )_{i}$$
+      となる。$\delta_{ij}$はクロネッカーのデルタである。\\
+
+      ReLU、シグモイド関数、ソフトマックス関数のグラフと、ReLU、シグモイド関数の導関数のグラフを図\ref{fig : activation-functions} に示す。ただしソフトマックス関数のグラフは表示の都合上$100$倍したものを載せてある。
+      %１枚の画像
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=140mm]{fig-activation-functions.png}
+\caption{活性化関数とそれらの導関数のグラフ}
+\label{fig : activation-functions}
+\end{figure}
+
+ %      \subsubsection{ソフトマックス関数}
+  \section{出力層}
+ 節\ref{sec : アーキテクチャとニューラルネットワークの働き}の図\ref{fig : NN-example}での手書き数字の認識をするニューラルネットワークにおいては、出力は$0$から$9$までの数字に対応した成分を持つ、$10$次元のベクトルになる。多クラス分類であるから、出力層の活性化関数はソフトマックス関数を用いる。すなわち出力層に入力されるベクトルを$\vb*{z}$とすれば
+  \begin{equation*}
+  \hat{ \vb*{y} } = \mathrm{softmax} \qty( \vb*{z} )
+  \end{equation*}
+  である。
+  したがって出力されたベクトルの各成分は「その成分に対応した数字がデータに書かれている確率」として取り扱うことができる。\\
+
+    %\subsection{コスト関数}
+      ミニバッチ確率勾配法で多クラス分類を行うことを考える。ミニバッチに選ばれた訓練データを$\mathbb{X} = \qty{ \vb*{x}^{(1)} , \ldots , \vb*{x}^{\qty(m')} }$とする。計画行列は式(\ref{eq : design-matrix})を用いる。$i$番目の訓練データ$\vb*{x}^{(i)}$を用いたときの出力のベクトルを$\hat{ \vb*{y} }^{(i)} = \qty[ \hat{y}_{0}^{(i)} , \ldots ,  \hat{y}_{K}^{(i)}]^{\T}$とし、$\vb*{x}^{(i)}$のラベルに対応したワンホットベクトルを$\vb*{y}^{(i)}$とする。この出力とワンホットベクトルの近さを小さくする方向にパラメータを変更していくのが、ニューラルネットワークの訓練の目的である。ニューラルネットワークで用いているパラメータはベクトル、行列、あるいはテンソルであるかもしれず、複数ある場合もあるので、それらをまとめて集合$\mathbb{W}$と書くことにする。ここでは「近さ」を表す\daiji{コスト関数}（cost function）をどのように表現するか、その微分はどうなるかを説明する。
+      $\hat{ \vb*{y} }^{(i)} $はパラメータ$\mathbb{W}$の関数であるから、コスト関数も$\mathbb{W}$の関数$J( \mathbb{W} )$である。
+
+     % \subsubsection{平均二乗誤差}
+      １つ目はコスト関数を\daiji{平均二乗誤差}（mean squared error, MSE）とする方法である。平均二乗誤差は$\hat{ \vb*{y} }^{(i)}$と$\vb*{y}^{(i)}$の差の$L^{2}$ノルムの$2$乗を平均したものである。
+      \begin{equation}
+       J \qty( \mathbb{W} ) %= \sum_{i = 1}^{m'} J_{i} \qty( \mathbb{W} )
+       =\frac{1}{m '} \sum_{i = 1}^{m'} \norm{ \hat{ \vb*{y} }^{(i)} - \vb*{y}^{(i)} }_{2}^{2}. \label{eq : cost-function-mean-squared-error}
+      \end{equation} %ただし$i$番目の訓練データのみに関するコスト関数を$J_{i} \qty( \mathbb{W} )$とした。
+      このコスト関数の出力$\hat{ \vb*{y} }^{(i)}$に関する勾配$\grad_{\hat{ \vb*{y} }^{(i)}} J \qty( \mathbb{W} )$は
+     \begin{equation*}
+     \grad_{\hat{ \vb*{y} }^{(i)}} J \qty( \mathbb{W} ) = \frac{2}{m '} \sum_{i = 1}^{m'} \qty(  \hat{ \vb*{y} }^{(i)} - \vb*{y}^{(i)}  )
+     \end{equation*}
+     となる。
+      %\subsubsection{交差エントロピー}
+      もう１つはコスト関数として交差エントロピーを用いる方法がある。
+     \begin{equation}
+     J \qty( \mathbb{W} ) = - \frac{1}{m'} \sum_{i = 1}^{m'} \sum_{k = 0}^{K} y_{k}^{(i)} \log \hat{y}_{k}^{(i)}. \label{eq : cost-function-cross-entropy}
+     \end{equation}
+     ただし$\vb*{y}^{(i)} = \qty[ y_{0}^{(i)} , \ldots , y_{K}^{(i)} ]^{\T}$はワンホットベクトルであるから、$k$に関する総和はほとんどゼロになって、$i$番目のラベル$y^{(i)}$に対応した項だけが残ることになる。このコスト関数の出力$\hat{ \vb*{y} }^{(i)}$に関する勾配の$j$成分$\qty( \grad_{\hat{ \vb*{y} }^{(i)}} J \qty( \mathbb{W} ) )_{j}$は
+     \begin{equation*}
+     \qty( \grad_{\hat{ \vb*{y} }^{(i)}} J \qty( \mathbb{W} ) )_{j} = - \frac{1}{m '} \frac{ y_{j}^{(i)} }{ \hat{y}_{j}^{(i)} }
+     \end{equation*}
+     となる。
+
+  \section{誤差逆伝搬法}
+  ニューラルネットワークはコスト関数が最小になるようにパラメータを更新しながら訓練する。その際にコスト関数のパラメータに関する勾配が必要となる。ここではTensorFlowが実装している\daiji{誤差逆伝搬法}または\daiji{バックプロパゲーション}（backpropagation）の説明をする。
+
+
+
+
+    \subsection{微分の連鎖律}
+    誤差逆伝搬法には微分の連鎖律を用いる。ある関数$f$がベクトル$\vb*{u}$の関数であり、ベクトル$\vb*{u}$はベクトル$\vb*{v}$の関数であるとする。このとき$f$の$\vb*{v}$に関する勾配$\grad_{\vb*{v}} f$は微分の\daiji{連鎖律}（chain rule）を用いて次のように計算できる。
+    \begin{equation*}
+    \qty( \grad_{\vb*{v}} f )_{i} = \pdv{f}{v_{i}} = \pdv{f}{u_{j}} \pdv{ u_{j} }{ v_{i} }.
+    \end{equation*}
+    ただしアインシュタインの縮約規則を用いている。また$( j , i )$成分に$\pdv*{ u_{j} }{ v_{i} }$を持つ行列を、$\vb*{v}$に関する$\vb*{u}$の\daiji{ヤコビ行列}（Jacobian matrix）という。このヤコビ行列を$\pdv*{ \vb*{u} }{ \vb*{v} }$で表してさらに計算を進めると、
+        \begin{equation*}
+    \qty( \grad_{\vb*{v}} f )_{i} =\pdv{ u_{j} }{ v_{i} } \pdv{f}{u_{j}}
+    = \qty( \pdv{ \vb*{u} }{ \vb*{v} }  )_{ji}  \qty(\grad_{\vb*{u}} f)_{j}
+    = \qty[ \qty(\pdv{ \vb*{u} }{ \vb*{v} }  )^{\T} ]_{ij}  \qty(\grad_{\vb*{u}} f)_{j} = \vb*{a}_{i}^{\T} \qty(\grad_{\vb*{u}} f)%= \qty( \pdv{ \vb*{u} }{ \vb*{v} } )_{ji} \qty(\grad_{\vb*{u}} f)_{j} = \qty(\qty( \pdv{ \vb*{u} }{ \vb*{v} } )^{\T})_{ij} \qty(\grad_{\vb*{u}} f)_{j} = \vb*{a}_{i}^{\T} \qty(\grad_{\vb*{u}} f)
+    \end{equation*}
+    となる。ただし$\qty(\pdv*{ \vb*{u} }{ \vb*{v} })^{\T}$の$i$列目の行ベクトルを$\vb*{a}_{i}^{\T}$とした。ゆえに求めていた勾配は
+ \begin{equation*}
+ \grad_{\vb*{v}} f =\qty(  \pdv{ \vb*{u} }{ \vb*{v} })^{\T} \qty(\grad_{\vb*{u}} f)
+        \end{equation*}
+        となることがわかる。
+
+    より一般に、ある関数$f$がテンソル$\vb{U}$の関数であり、テンソル$\vb{U}$はテンソル$\vb{V}$の関数であるとする。このとき$f$の$\vb{V}$に関する勾配$\grad_{\vb{V}} f$がどうなるかを考える。$\grad_{\vb{V}} f$はテンソル$\vb{V}$と同じサイズのテンソルであるが、その成分を一つの添字$i$で指定できる。すなわちテンソル$\grad_{\vb{V}} f$をベクトルの配列に変換したと考える。すると$\qty( \grad_{\vb{V}} f )_{i} = \pdv*{f}{V_{i}}$であるから、先ほどと同じように勾配を計算することができる。
+    \begin{equation}
+    \grad_{\vb{V}} f = \sum_{i} \qty( \grad_{\vb{V}} U_{i} ) \pdv{f}{U_{i}} . \label{eq : chain-rule}
+    \end{equation}
+    このように$\grad_{\vb{V}} f$は$\grad_{\vb{V}} \vb{U}$と$\grad_{\vb{U}} f$から作り出すことができる。
+
+    \subsection{誤差逆伝搬法を用いた学習}
+    コスト関数を計算するのには入力層から隠れ層を通って出力を出していたが、出力側から入力側に向かって勾配を計算してゆくので誤差逆伝搬法という。ノード$\vb{A}$から関数$f$を使ってノード$\vb{B}$の値を計算するときに、同時に勾配$\grad_{\vb{A}} \vb{B}$を計算して保存しておく。出力層までこれを計算したら、これまで計算していた複数の勾配から逆向きに微分の連鎖律(\ref{eq : chain-rule})の計算を行う。こうすることで最終的に必要だったコスト関数のパラメータに関する勾配が得られるのだ。
+
+    節\ref{sec : アーキテクチャとニューラルネットワークの働き}の例で、コスト関数のパラメータ$W^{(2)}$に関する勾配$ \grad_{W^{(2)}} J $を誤差逆伝搬法を用いて計算するためのパスを図\ref{fig : NN-example}に描き加えたものを図\ref{fig : backpropagation}に示す。$W^{(2)} \rightarrow \vb*{u}^{(2)}, ~  \vb*{u}^{(2)} \rightarrow \hat{\vb*{y}}, ~  \hat{\vb*{y}} \rightarrow J$の計算をする際にそれぞれ$\grad_{W^{(2)}} \vb*{u}^{(2)}　, ~ \grad_{\vb*{u}^{(2)}} \hat{\vb*{y}}, ~ \grad_{\hat{\vb*{y}}} J$を計算しておく。そして$\grad_{\hat{\vb*{y}}} J$ と $\grad_{\vb*{u}^{(2)}} \hat{\vb*{y}}$から$\grad_{\vb*{u}^{(2)}} J$を、$\grad_{ \vb*{u}^{(2)} } \hat{ \vb*{y} }$と$\grad_{\vb*{u}^{(2)}} J$から$\grad_{W^{(2)}} J$を計算する。
+ %節\ref{sec : アーキテクチャとニューラルネットワークの働き}の図\ref{fig : NN-example}での例を用いて、誤差逆伝搬法を説明する。コスト関数のパラメータ$W^{(2)}$に関する勾配$ \grad_{W^{(2)}} J $を誤差逆伝搬法%\daiji{リバースモード自動微分} を用いて計算する。そのためのパスを図\ref{fig : NN-example}に描き加えたものを図\ref{fig : backpropagation}に示す。
+
+
+
+
+    %１枚の画像
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=120mm]{fig-backpropagation.png}
+\caption{逆伝搬のパスを図\ref{fig : NN-example}のグラフに書き加えたもの}
+\label{fig : backpropagation}
+\end{figure}
+
+
+    \subsection{勾配消失問題} \label{subsec : vanishing-gradient}
+    図\ref{fig : activation-functions}を見れば分かるように、シグモイド関数$\sigma ( x )$は
+    $\abs{x}$が大きい領域で定数値に漸近し、傾きが小さくなっている。このように関数が非常に平坦になることを、自動詞の用法で\daiji{飽和している}（saturate）という。もし隠れ層で飽和するような活性化関数を用いていた場合、その傾きは非常に小さくなるため、微分の連鎖律を用いて勾配を掛け合わせてゆくと、入力層まで逆伝搬したときにコスト関数の勾配は非常に小さくなってしま%う。活性化関数が飽和しているときその傾きは非常に小さくなるからである。すると
+    い、勾配降下法によるパラメータの更新が進まなくなる。このように活性化関数が飽和するせいでコスト関数の勾配が非常に小さくなる問題を\daiji{勾配消失問題}（vanishing gradient problem）という。%逆に活性化関数の傾きが大きすぎるせいでコスト関数の勾配も大きくなりすぎてしまう問題を\daiji{勾配爆発問題}（exploding gradient problem）という。\red{加筆が望まれています}
+
+    勾配消失問題を回避するためには活性化関数をタスクに適切なものにする、最適化アルゴリズムを変えるなどの対処が必要である。
+
+\end{document}

@@ -1,0 +1,224 @@
+%\documentclass{jsarticle}
+%\documentclass[draft]
+%\documentclass[dvipdfmx,autodetect-engine,draft]{jsarticle}% autodetect-engine で pLaTeX / upLaTeX を自動判定
+\documentclass[dvipdfmx,autodetect-engine]{jsarticle}% autodetect-engine で pLaTeX / upLaTeX を自動判定
+
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{url}
+\usepackage{bm}
+\usepackage{comment}
+%\usepackage{split}
+\usepackage{multirow}
+\usepackage{listings,jlisting}
+\usepackage{braket}
+\usepackage{physics}
+\usepackage{xparse,amsmath}
+\usepackage{here}
+\usepackage{enumerate}
+\usepackage{mathrsfs}
+%\usepackage{jlistings} %日本語のコメントアウトをする場合jlistingが必要
+\setcounter{tocdepth}{3}
+\usepackage{amsmath,amssymb}
+
+\usepackage{empheq}
+
+
+
+%ここからソースコードの表示に関する設定
+\lstset{
+  basicstyle={\ttfamily},
+  identifierstyle={\small},
+  commentstyle={\smallitshape},
+  keywordstyle={\small\bfseries},
+  ndkeywordstyle={\small},
+  stringstyle={\small\ttfamily},
+  frame={tb},
+  breaklines=true,
+  columns=[l]{fullflexible},
+  numbers=left,
+  xrightmargin=0zw,
+  xleftmargin=3zw,
+  numberstyle={\scriptsize},
+  stepnumber=1,
+  numbersep=1zw,
+  lineskip=-0.5ex
+}
+\renewcommand{\lstlistingname}{ソースコード}
+%ここまでソースコードの表示に関する設定
+
+%
+% proof environment without \qed
+%
+\makeatletter
+%\renewenvironment{proof}[1][\proofname]{\par
+\newenvironment{Proof}[1][\Proofname]{\par
+  \normalfont
+  \topsep6\p@\@plus6\p@ \trivlist
+  \item[\hskip\labelsep{\bfseries #1}\@addpunct{\bfseries.}]\ignorespaces
+}{%
+  \endtrivlist
+}
+%\renewcommand{\proofname}{証明}
+%\renewcommand{\proofname}{Proof}
+\newcommand{\Proofname}{証明}
+%\newcommand{\Proofname}{Proof}
+\makeatother
+%
+% \qed
+%
+\makeatletter
+\def\BOXSYMBOL{\RIfM@\bgroup\else$\bgroup\aftergroup$\fi
+  \vcenter{\hrule\hbox{\vrule height.85em\kern.6em\vrule}\hrule}\egroup}
+\makeatother
+\newcommand{\BOX}{%
+  \ifmmode\else\leavevmode\unskip\penalty9999\hbox{}\nobreak\hfill\fi
+  \quad\hbox{\BOXSYMBOL}}
+%\renewcommand\qed{\BOX}
+\newcommand\QED{\BOX}
+
+
+
+\begin{document}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%かける10のなんとか乗
+\newcommand{\E}[1]{ \times 10^{#1}}
+%数式中の単位（空白付き）
+\newcommand{\un}[1]{~{\rm #1}}
+%数式内の日本語
+\newcommand{\jp}[1]{\mbox{#1}}
+
+
+
+
+\def\T{\mathsf{T}}
+\def\y{\vb*{y}}
+\def\w{\vb*{w}}
+\newcommand{\argmax}{\mathop{\rm argmax}\limits}
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+\begin{flushright}
+発表予定日：2019年11月4日
+\\慶應義塾大学理工学部物理学科\\岡崎健人
+\end{flushright}
+\begin{center}
+{\Large 卒研ゼミ「深層学習」} 
+\end{center}
+%箇条書き
+%\tableofcontents   %👈目次
+%\newpage
+
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%2.6節
+\setcounter{section}{4}
+\section{機械学習の基礎}
+\setcounter{subsection}{5}
+\subsection{ベイズ統計}
+データ$D_m := \qty{\vb*{x}^{(1)},\ldots, \vb*{x}^{(m)}}$が与えられたとき、データによって推定されるパラメータが$\vb*{\theta}$という値をとりうる確率はベイズの定理より
+\begin{eqnarray}
+p\qty(\vb*{\theta} \mid D_m) = \frac{ p\qty(D_m\mid \vb*{\theta}) p\qty(\vb*{\theta})}{p\qty(D_m)} \propto p\qty(D_m \mid \vb*{\theta}) p\qty(\vb*{\theta}) \label{Bayes}
+\end{eqnarray}
+となる。式(\ref{Bayes})の$p\qty(\vb*{\theta})$を事前確率（事前分布）、$p\qty(\vb*{\theta} \mid D_m )$を事後確率（事後分布）、$p\qty( D_m \mid \vb*{\theta})$を尤度（尤度関数）という。事前確率はデータを手に入れる前に想定していた確率であるのに対して、事後確率はデータを得たあとに事前確率を修正（ベイズ修正）したものである。式(\ref{Bayes})からわかるように、ベイズ修正とは事前確率に尤度をかけて規格化することで、よりもっともらしい分布に修正することである。
+
+\subsubsection*{例：ベイズ線形回帰}
+データ$X,~\vb*{y}$が得られたもとでパラメータが$\vb*{w}$となる条件付き確率$p\qty(\vb*{w} \mid X,\vb*{y})$を求めたい。
+\begin{equation}
+p\qty(\vb*{w} \mid X,\vb*{y}) = \frac{p\qty(\vb*{y} \mid X,\vb*{w}) p(X \mid \vb*{w}) p(\vb*{w})}{ p(X,\vb*{y})} \propto p\qty(\vb*{y} \mid X,\vb*{w}) p(\vb*{w}). \label{pp}
+\end{equation}
+尤度$p\qty(\vb*{y} \mid X,\vb*{w})$が正規分布に従うとき、式(\ref{pp})の事後確率を具体的に計算する例をみせる。
+\begin{eqnarray}
+p\qty(\vb*{y} \mid X,\vb*{w}) = \mathcal{N}\qty(\vb*{y};X\vb*{w},I)\propto \exp\qty(-\frac{1}{2} \qty(\vb*{y} - X \vb*{w} )^\T \qty(\vb*{y} - X \vb*{w} ) ). \label{likelihood}
+\end{eqnarray}
+式(\ref{likelihood})は、観測値$\vb*{y}=\qty[y_1,\ldots,y_m]^\T$の平均からのずれ具合が正規分布に従うと仮定していることを意味している。事前確率はデータを得る前に想定していた確率のことであるから、過去の経験にもとづいた、想定していた分布を設定すればよい。ここでは計算を容易にするため、事前分布は尤度と同じく正規分布と設定する。
+\begin{equation}
+p( \vb*{w} ) = \mathcal{N}\qty(\vb*{w} ; \vb*{\mu}_0 , \Lambda_0) \propto \exp \qty(- \frac{1}{2} \qty(\vb*{w} - \vb*{\mu}_0)^\T \Lambda_0^{-1} \qty(\vb*{w} - \vb*{\mu}_0) ). \label{posterior}
+\end{equation}
+実用上、$\Lambda_0 =\mathrm{diag}\qty(\vb*{\lambda}_0)$などとすれば計算はさらに簡単になる。
+
+
+
+
+事後確率は尤度と事前確率の積に比例するので、式(\ref{pp})、式(\ref{likelihood})、式(\ref{posterior})より
+\begin{equation*}
+p\qty(\vb*{w} \mid X,\vb*{y}) \propto \exp\qty(-\frac{1}{2} \qty(\vb*{y} - X \vb*{w} )^\T \qty(\vb*{y} - X \vb*{w} ) ) \exp \qty(- \frac{1}{2} \qty(\vb*{w} - \vb*{\mu}_0)^\T \Lambda_0^{-1} \qty(\vb*{w} - \vb*{\mu}_0) ).
+\end{equation*}
+指数関数の肩の部分を展開して、$\w$の二次形式$-\frac{1}{2} \qty(\w-\vb*{\mu}_m)^\T \Lambda_{m}^{-1} \qty(\w-\vb*{\mu}_m)$の形にまとめることを試みる。まず$\Lambda_0^{-1}$は対称行列であり、$\w^\T X^\T \y $と$\w^\T \Lambda_{0}^{-1} \vb*{\mu_0} $はスカラーであるから、$\w^\T X^\T \y =\qty(\w^\T X^\T \y)^\T=\y^\T X \w,~~\w^\T \Lambda_{0}^{-1} \vb*{\mu_0} =\qty(\w^\T \Lambda_{0}^{-1} \vb*{\mu_0} )^\T = \vb*{\mu}_0^\T  \Lambda_{0}^{-1} \w$のように、項の左側にある$\w^\T$を$\w$として項の右側に移すことができる。ゆえに
+\begin{eqnarray*}
+-\frac{1}{2} \qty(\vb*{y} - X \vb*{w} )^\T \qty(\vb*{y} - X \vb*{w} ) &=&  -\frac{1}{2} \qty(  \y^\T \y -\y^\T X \w -\w^\T X^\T \y +\w^\T X^\T X \w    ) \\
+&=& -\frac{1}{2} \qty( \mathrm{const.}-2\y^\T X \w +\w^\T X^\T X \w    ) ,
+\end{eqnarray*}
+\begin{eqnarray*}
+-\frac{1}{2} \qty( \w - \vb*{\mu}_0 )^\T \Lambda_{0}^{-1}  \qty( \w - \vb*{\mu}_0 ) 
+&=& -\frac{1}{2} \qty(\w^\T  \Lambda_{0}^{-1} \w  -\w^\T  \Lambda_{0}^{-1} \vb*{\mu}_0 - \vb*{\mu}_0^\T  \Lambda_{0}^{-1} \w + \vb*{\mu}_0^\T  \Lambda_{0}^{-1} \vb*{\mu}_0) \\
+&=& -\frac{1}{2} \qty(\w^\T  \Lambda_{0}^{-1} \w   - 2\vb*{\mu}_0^\T  \Lambda_{0}^{-1} \w + \mathrm{const.}).
+\end{eqnarray*}
+ただし$\w$によらない項は定数$\mathrm{const.}$とした。ゆえに事後確率は
+\begin{eqnarray}
+p\qty(\w \mid X,\y) &\propto& \exp\qty(-\frac{1}{2}\qty(-2\y^\T X \w +\w^\T X^\T X \w + \w^\T  \Lambda_{0}^{-1} \w   - 2\vb*{\mu}_0^\T  \Lambda_{0}^{-1} \w) ) \nonumber  \\
+&=& \exp\qty(-\frac{1}{2} \qty[-2\qty(\y^\T X + \vb*{\mu}_0^\T \Lambda_0^{-1} )\w + \w^\T \qty(X^\T X + \Lambda_{0}^{-1}) \w] ). \label{比較対称}
+\end{eqnarray}
+ここで、目指している二次形式を展開すると
+$$-\frac{1}{2} \qty(\w-\vb*{\mu}_m)^\T \Lambda_{m}^{-1} \qty(\w-\vb*{\mu}_m) = -\frac{1}{2} \qty( -2 \vb*{\mu}_{m}^\T \Lambda_{m}^{-1} \w +\w^\T \Lambda_{m}^{-1} \w )+ \mathrm{const.}$$
+であるから、これと式(\ref{比較対称})の引数部分を比較して、$\Lambda_{m}^{-1} = X^\T X +\Lambda_{0}^{-1},~~\vb*{\mu}_{m}^{\T} \Lambda_{m}^{-1} = \y^\T X + \vb*{\mu}_{0}^{\T}\Lambda_{0}^{-1}$を得る。すなわち
+$$\Lambda_{m} = \qty(X^\T X +\Lambda_{0}^{-1})^{-1},~~~~\vb*{\mu}_{m} = \Lambda_{m} \qty(X^\T \y +\Lambda_{0}^{-1} \vb*{\mu}_0)$$
+として、事後確率は
+$$p\qty( \w \mid X,\y  ) \propto \exp\qty(-\frac{1}{2} \qty(\w-\vb*{\mu}_m)^\T \Lambda_{m}^{-1} \qty(\w-\vb*{\mu}_m))$$
+となり、これもまた正規分布に従っている。この計算結果は、はじめ$\w$は平均$\vb*{\mu}_0,~$分散共分散行列$\Lambda_0$の正規分布に従うと想定していたものが、データ$X,~\y$を得たことにより、平均$\vb*{\mu}_m,~$分散共分散行列$\Lambda_m$の正規分布に従うように修正されたことを表している。ただし$\Lambda_m$が正則になるように$\Lambda_0$を設定する必要はある。この例のように、事前分布と事後分布が同じ分布族になるとき、これを共役自然分布という\cite{2}。
+
+事前確率において$\vb*{\mu}_0 = \vb*{0},~\Lambda_0 = \frac{1}{\lambda} I$と設定した場合、事後確率において$\Lambda_{m}^{-1} = X^\T X +\lambda I,~\vb*{\mu}_m = \Lambda_m X^\T \y $となるので、$\w$の真の値$\vb*{\mu}_m$についての方程式
+$$\Lambda_{m}^{-1} \vb*{\mu}_m = \qty(X^\T X +\lambda I) \vb*{\mu}_m = X^\T \y. $$
+が得られる。ここで$X$と$\vb*{y}$は有限個の観測されたデータであるため、この方程式を解いて得られる$\vb*{\mu}_m$の値は実際には$\w$の推定値$\hat{\vb*{\mu}}_m$である。この方程式は、正則化項を重み減衰$\lambda \norm{\w}_2^2$として正則化最小二乗法により得られた方程式$ \qty(X^\T X +\lambda I) \w = X^\T \y$に一致している。ただし$\lambda=0$としてしまうと、これは$\w$の分散がはじめ無限大であったことを表しているが、$\Lambda_0,~\Lambda_0^{-1}$を定義できないため、ベイズ推定ではこの場合を取り扱うことができない。さらに重要な違いとしては、正則化最小二乗法では$\w$の推定値のみ得られていたが、ベイズ推定ではそれに加えて$\w$の分散共分散行列$\Lambda_m$も得ることができる。
+
+\subsubsection{MAP推定}
+事後確率$p\qty(\vb*{\theta} \mid D_m)$が最大になるときの$\vb*{\theta}$の値をその推定値とする方法を、MAP推定（最大事後確率推定、maximum a posteriori  estimation）という。すなわちその推定値を$\hat{\vb*{\theta}}_{\mathrm{MAP}}$とかけば、
+$$\hat{\vb*{\theta}}_{\mathrm{MAP}} = \argmax_{\vb*{\theta}} p\qty(\vb*{\theta} \mid D_m) =  \argmax_{\vb*{\theta}}  \log p\qty(\vb*{\theta} \mid D_m) =\argmax_{\vb*{\theta}}  \qty[\log p\qty(D_m \mid \vb*{\theta}) + \log p\qty(\vb*{\theta})].$$
+
+例として、線形回帰モデルにおいて事前分布$p\qty(\w)$が正規分布$\mathcal{N} \qty(\w; \vb*{0},\frac{1}{\lambda} I)$に従うと設定する。すると
+$$p\qty(\w) \propto \exp\qty(-\frac{1}{2} \lambda\w^\T \w), ~~~\log p\qty(\w) =-\frac{\lambda}{2} \w^\T \w + \mathrm{const.}$$
+であるから、
+$$\log p\qty(\w \mid X,\y) = \log p\qty(\y \mid X,\w) + \log p\qty(\w) + \mathrm{const.} =-\mathrm{MSE}(\w) -\frac{\lambda}{2}\w^\T \w + \mathrm{const.}$$
+これは最尤推定法で最大化する関数（式5.65）に重み減衰を付加したものになっていることがわかる。符号がマイナスとなっているから、これを最大化することは、正則化最小二乗法における$\mathrm{MSE}(\w) +\frac{\lambda}{2}\w^\T \w$を最小化することと等価である。
+
+データからのみでは得られないような情報を事前確率から得ることができるため、MAP推定は有用である。ただしそれによって推定量のバリアンスを最尤推定に比べて小さくできるが、バイアスは増大する。
+
+正則化を含む推定方法の多くは、裏でMAP推定を行なっていると考えることができ、その正則化項は$\log p\qty(\vb*{\theta})$に対応している。ただしすべての正則化項が$\log p\qty(\vb*{\theta})$に対応しているわけではない。例えば正則化項がデータを含むとき、$p\qty(\vb*{\theta})$は$\vb*{\theta}$のみの関数であるため、「正則化項は$\log p\qty(\vb*{\theta})$に対応している」と考えることはできない。逆にMAP推定によって機械的に正則化項を設計できる。たとえば事前確率$p\qty(\vb*{\theta})$を正規分布の線形結合と設定すれば、より複雑な正則化項を作り出すことができる。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\begin{comment}
+\newpage
+\section*{ベイズ推定}
+事前確率（prior probability）とは、データを手に入れる前に想定していた確率のこと。事後確率（posterior probability）とは、データを用いて事前確率を修正（ベイズ修正）した結果の確率のこと。
+
+クッキーのたくさん詰まったボウルが２つある。ボウル１にはチョコチップクッキーが10枚、プレーンクッキーが30枚入っていて、ボウル２にはそれぞれ20枚ずつ入っている。ボウルをランダムにとり、中からランダムにクッキーを取り出したところ、プレーンであった。このとき、どちらのボウルが選ばれたのだろうか？　ボウル１のほうがプレーンクッキーの割合が大きいので、直感的にはボウル１が答えな気がする。正確な答えをベイズ推定を用いて出そう。ボウル$i(=1,2)$が選ばれる事象を$H_i$とし、「プレーンクッキーが出た」というデータを$D$とする。目的は$D$を得た状況下でのボウル１が選ばれた条件付き確率$\Pr (H_1 \mid D)$を計算して、それが50\%より大きいのか小さいのかを評価することである。まずボウルを選ぶ確率はどちらも$\Pr (H_1)=\Pr(H_2)=50\%.~$ボウル１での$D$の確率は$\Pr(D\mid H_1)=30/40=75\%,~$ボウル２での確率は$\Pr(D \mid H_2)=20/40=50\%.~$これで計算する準備は整った。ベイズの定理から
+\begin{eqnarray*}
+\Pr (H_1 \mid D) &=& \frac{\Pr(H_1)\Pr(D\mid H_1)}{\Pr (D)}=\frac{\Pr(H_1)\Pr(D\mid H_1)}{\Pr(H_1)\Pr(D\mid H_1)+\Pr(H_2)\Pr(D\mid H_2)} \\
+&=& \frac{50\% \times 75\%}{50\% \times 75\% + 50\% \times 50\%}=60\%.
+\end{eqnarray*}
+したがって初めボウル１が選ばれる確率は50\%と想定していたものが、データ$D$を得たことにより60\%に修正された。\\
+
+海図が$10\times 10$に区切られている。この範囲である潜水艦が失踪した。ベイズ推定を用いて位置を特定し、捜索したい。噂によると、$(5,6)$の場所では
+
+\end{comment}
+
+%\newpage
+\begin{thebibliography}{9}
+  \bibitem{2} 安道知寛，「ベイズ統計モデリング」，株式会社朝倉書店，2010年．pp.  28--41.
+ \end{thebibliography}
+\end{document}

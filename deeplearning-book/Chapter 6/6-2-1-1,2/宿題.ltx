@@ -1,0 +1,112 @@
+%\documentclass{jsarticle}
+%\documentclass[draft]
+%\documentclass[dvipdfmx,autodetect-engine,draft]{jsarticle}% autodetect-engine で pLaTeX / upLaTeX を自動判定
+\documentclass[dvipdfmx,autodetect-engine]{jsarticle}% autodetect-engine で pLaTeX / upLaTeX を自動判定
+
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{url}
+\usepackage{bm}
+\usepackage{comment}
+%\usepackage{split}
+\usepackage{multirow}
+\usepackage{listings,jlisting}
+\usepackage{braket}
+\usepackage{physics}
+\usepackage{xparse,amsmath}
+\usepackage{here}
+\usepackage{enumerate}
+\usepackage{mathrsfs}
+%\usepackage{jlistings} %日本語のコメントアウトをする場合jlistingが必要
+\setcounter{tocdepth}{3}
+\usepackage{amsmath,amssymb}
+
+\usepackage{empheq}
+%\usepackage{qexam}
+
+
+%
+% proof environment without \qed
+%
+\makeatletter
+%\renewenvironment{proof}[1][\proofname]{\par
+\newenvironment{Proof}[1][\Proofname]{\par
+  \normalfont
+  \topsep6\p@\@plus6\p@ \trivlist
+  \item[\hskip\labelsep{\bfseries #1}\@addpunct{\bfseries.}]\ignorespaces
+}{%
+  \endtrivlist
+}
+%\renewcommand{\proofname}{証明}
+%\renewcommand{\proofname}{Proof}
+\newcommand{\Proofname}{証明}
+%\newcommand{\Proofname}{Proof}
+\makeatother
+%
+% \qed
+%
+\makeatletter
+\def\BOXSYMBOL{\RIfM@\bgroup\else$\bgroup\aftergroup$\fi
+  \vcenter{\hrule\hbox{\vrule height.85em\kern.6em\vrule}\hrule}\egroup}
+\makeatother
+\newcommand{\BOX}{%
+  \ifmmode\else\leavevmode\unskip\penalty9999\hbox{}\nobreak\hfill\fi
+  \quad\hbox{\BOXSYMBOL}}
+%\renewcommand\qed{\BOX}
+\newcommand\QED{\BOX}
+
+
+
+
+
+
+\usepackage{etoolbox}
+\AtBeginEnvironment{empheq}{%
+  \linespread{0.8}\selectfont\narrowbaselines
+}
+
+
+
+\begin{document}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+\def\x{\vb*{x}}
+\def\y{\vb*{y}}
+\def\pd{p_{\rm data}}
+
+
+\begin{flushright}
+\today\\
+慶應義塾大学理工学部物理学科\\
+岡崎健人
+\end{flushright}
+\begin{center}
+{\large 宿題} 
+\end{center}
+%箇条書き
+%\tableofcontents   %👈目次
+%\newpage
+%2.6節
+
+
+$$J\qty[f] \equiv \int \dd{\x}\dd{\y} \pd(\x,\y) \norm{\y - f(\x)}_{1}^{1} $$
+とする。この汎関数$J\qty[f]$を最小とするような関数$f^\ast$はOOOに等しいことを示す。\\
+
+
+汎関数$J$の変分$\delta J= J\qty[f + \delta f] - J \qty[f]$は
+\begin{equation}
+ \delta J =  \int \dd{\x}\dd{\y} \pd(\x,\y) \qty(\norm{f(\x) + \delta f(\x) - \y}_{1}^{1} - \norm{f(\x) - \y}_{1}^{1} )
+ \end{equation}
+ である。
+ 
+ \begin{eqnarray}
+ && \norm{f(\x) + \delta f(\x) - \y}_{1}^{1} - \norm{f(\x) - \y}_{1}^{1} \\
+ &=& \sum_{i=1}^{m} \qty( \abs{f_i + \delta f_i - y_i} - \abs{f_i  - y_i} ) \\
+ &=& \sum_{i=1}^{m} \qty[ ]
+ \end{eqnarray}
+
+
+\end{document}

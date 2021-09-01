@@ -1,0 +1,314 @@
+%\documentclass{jsarticle}
+%\documentclass[draft]
+%\documentclass[dvipdfmx,autodetect-engine,draft]{jsarticle}% autodetect-engine で pLaTeX / upLaTeX を自動判定
+\documentclass[dvipdfmx,autodetect-engine]{jsarticle}% autodetect-engine で pLaTeX / upLaTeX を自動判定
+
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{url}
+\usepackage{bm}
+\usepackage{comment}
+%\usepackage{split}
+\usepackage{multirow}
+\usepackage{listings,jlisting}
+\usepackage{braket}
+\usepackage{physics}
+\usepackage{xparse,amsmath}
+\usepackage{here}
+\usepackage{enumerate}
+\usepackage{mathrsfs}
+%\usepackage{jlistings} %日本語のコメントアウトをする場合jlistingが必要
+\setcounter{tocdepth}{3}
+\usepackage{amsmath,amssymb}
+\usepackage{color}
+
+\usepackage{empheq}
+\usepackage{qexam}
+
+\usepackage{jumoline}
+
+%\usepackage[normalem]{ulem} 
+
+
+%
+% proof environment without \qed
+%
+\makeatletter
+%\renewenvironment{proof}[1][\proofname]{\par
+\newenvironment{Proof}[1][\Proofname]{\par
+  \normalfont
+  \topsep6\p@\@plus6\p@ \trivlist
+  \item[\hskip\labelsep{\bfseries #1}\@addpunct{\bfseries.}]\ignorespaces
+}{%
+  \endtrivlist
+}
+%\renewcommand{\proofname}{証明}
+%\renewcommand{\proofname}{Proof}
+\newcommand{\Proofname}{証明}
+%\newcommand{\Proofname}{Proof}
+\makeatother
+%
+% \qed
+%
+\makeatletter
+\def\BOXSYMBOL{\RIfM@\bgroup\else$\bgroup\aftergroup$\fi
+  \vcenter{\hrule\hbox{\vrule height.85em\kern.6em\vrule}\hrule}\egroup}
+\makeatother
+\newcommand{\BOX}{%
+  \ifmmode\else\leavevmode\unskip\penalty9999\hbox{}\nobreak\hfill\fi
+  \quad\hbox{\BOXSYMBOL}}
+%\renewcommand\qed{\BOX}
+\newcommand\QED{\BOX}
+
+
+
+
+
+
+\usepackage{etoolbox}
+\AtBeginEnvironment{empheq}{%
+  \linespread{0.8}\selectfont\narrowbaselines
+}
+
+
+
+\begin{document}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+%立体の添え字とうえつき文字
+\newcommand{\bt}[3]{#1_{\R{#2}}^{\R{#3}}}
+\newcommand{\euni}[2]{\E{#1}\un{#2}}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+\def\x{\vb*{x}}
+\def\T{\mathsf{T}}
+
+\begin{flushright}
+輪講予定日：2019年10月7日\\
+慶應義塾大学理工学部物理学科\\
+岡崎健人
+\end{flushright}
+\begin{center}
+{\large 卒研ゼミ「深層学習」} \\
+4.4 制約付き最適化
+\end{center}
+%箇条書き
+%\tableofcontents   %👈目次
+%\newpage
+
+
+\textcolor{red}{参考文献のどこかで「凸領域でなないときKKT法は使うことができない」という文章を読んだ気がして、そこに計算例\qref{例５}の計算ミスも加わって、境界の凸でない部分に最小点があるときはうまくいかないと思い込んでいました。しかし発表のときに指摘されたように、実際は凸でなくてもうまく機能する気がします。よって実際に使うときは、領域の形などあまり気にしなくてもうまくいく確率が高いように思います。}
+%\section*{KKT法}
+\section{KKT法のまとめ}
+$m$個の等式制約$g_i(\x)=0$と$n$個の不等式制約$h_j(\x)\le 0$のもとで、目的関数$f(\vb*{x})$が最小となる点$\x^\ast$とそのときの$f(\x)$の値$f(\x^\ast)$を求めたい。このとき一般化ラグランジュ関数$L(\x,\vb*{\lambda},\vb*{\alpha})$を
+\begin{equation}
+L(\x,\vb*{\lambda},\vb*{\alpha}) = f(\x) + \sum_{i=1}^{m} \lambda_i g_i (\x) + \sum_{j=1}^{n} \alpha_j h_j(\x) \label{lag}
+\end{equation}
+と構成する。$\vb*{\lambda},~\vb*{g}(\x)$は第$i$成分にそれぞれ$\lambda_i,~g_i(\vb*{x})$をもつ列ベクトルで、$\vb*{\alpha},~\vb*{h}(\x)$は第$j$成分にそれぞれ$\alpha_i,~h_j(\vb*{x})$をもつ列ベクトルであるとすれば、
+\begin{subequations}
+\begin{empheq}[left=\empheqlbrace]{align}
+\pdv{L}{\x} &= \vb*{0}, \label{x}\\ 
+\pdv{L}{\vb*{\lambda}} &= \vb*{g}(\vb*{x})= \vb*{0}, \label{lambda}\\
+\pdv{L}{\alpha_j} &= h_j (\x) \le 0, ~~~j=1,\ldots,n,\label{alpha}\\
+\vb*{\alpha} \odot \vb*{h}(\vb*{x}) &= \vb*{0}, \label{alpha'}\\
+\alpha_j &\ge 0, ~~~j=1,\ldots,n\label{alpha''}
+\end{empheq}
+\end{subequations}
+をカルーシュ・クーン・タッカー条件（Karush--Kuhn--Tucker condition）あるいはKKT条件という。最小点$\x^\ast$を求める問題は、この連立（不）等式を満たす点$\qty(\x^\ast,\vb*{\lambda}^\ast , \vb*{\alpha}^\ast)$を求める問題に帰着され、この手法をKKT法という。不等式制約$h_j (\x) \le 0$がない場合は最後の３つの条件(\ref{alpha})、(\ref{alpha'})、(\ref{alpha''})は必要なくなり、KKT法はラグランジュの未定乗数法と等価になる\footnote{日本語版の脚注は翻訳ミスであると思われます。原文では「The KKT aproach generalizes the method of Lagrange multipliers, which allows equality constraints but not inequality constrains.」となっていて、翻訳者は関係代名詞の対象をThe KKT aproachにしてしまったのだと思います。それからLagrange multipliersだけだと未定乗数のみを表していておかしい気がします。}。
+
+
+\section{計算例}
+連立方程式を解く際にはWebサイト「Wolfram\textbar Alpha」を使用することがあった。またこの検索窓で「minimize x\textasciicircum2+y\textasciicircum2 subject to \{x-y+1/2=0, x\textasciicircum2+y\textasciicircum2$-1\le$0\}」などと検索すれば計算結果を瞬時に表示してくれるので、検算に便利であった。
+
+\begin{figure}[h]
+    \centering
+             \begin{minipage}[t]{0.45\linewidth}
+              \includegraphics[width=0.95\linewidth]{circle_and_line.png}
+              \caption{例\qref{あ}と例\qref{例２}の制約による領域。円内部と直線の共通部分が実行可能領域。}
+              \label{circle_and_line}
+          \end{minipage}
+          \hspace{0.05\linewidth}
+          \begin{minipage}[t]{0.45\linewidth}
+              \includegraphics[width=0.95\linewidth]{ball.png}
+              \caption{例\qref{例３}の制約による領域。球と水色の平面の共通部分が実行可能領域。}
+              \label{ball}
+          \end{minipage}
+      \end{figure}
+\begin{qlist}
+ \qitem \label{あ}傾き$1,~$切片$1/2$の直線$x-y+1/2=0$と半径$1$の円の内部$x^2+y^2-1\le 0$の交点のうち、放物面$f(x,y)=x^2+y^2$が最小値をとる点を求めたい（図\ref{circle_and_line}）。$f(x,y)$は原点から遠ざかるほど大きくなるので、直感的には原点から最も近い$(-1/4,1/4)$で最小になると予想できる。一般化ラグランジュ関数は
+ $$L(x,y,\lambda,\alpha)=x^2+y^2+\lambda\qty(x-y+\frac{1}{2})+\alpha\qty(x^2+y^2-1)$$
+ となる。KKT条件は
+\begin{empheq}[left={\empheqlbrace}]{align}
+\pdv{L}{x} &= 2x + \lambda + 2\alpha x = 0 ,\nonumber \\
+\pdv{L}{y} &= 2y - \lambda + 2\alpha y = 0, \nonumber  \\
+\pdv{L}{\lambda} &= x-y+\frac{1}{2} = 0,  \nonumber \\
+\pdv{L}{\alpha} &= x^2 + y^2 - 1 \le 0, \nonumber \\
+\alpha &  \qty(  x^2   + y^2 -1 ) = 0, \nonumber \\
+\alpha &\ge 0 \nonumber 
+\end{empheq}
+である。$\alpha = 0$と$\alpha > 0$で場合分けして連立方程式を解く。
+
+$\alpha = 0$のとき、KKT条件は
+\begin{empheq}[left={\empheqlbrace}]{align}
+2x + \lambda &= 0 ,\nonumber \\
+ 2y - \lambda  &= 0, \nonumber  \\
+x-y+\frac{1}{2} &= 0  \nonumber \\
+x^2 + y^2 - 1 &\le 0 \nonumber 
+\end{empheq}
+となり、最初の３つの連立方程式から解$\qty(x,y,\lambda)= \qty(-1/4,1/4,1/2)$を得ることができる。この結果は第４の不等式を満たし、さらに当初の予想と一致する。$\alpha > 0$のとき条件は
+\begin{empheq}[left={\empheqlbrace}]{align}
+2x + \lambda + 2\alpha x &= 0 ,\nonumber \\
+2y - \lambda + 2\alpha y &= 0, \nonumber  \\
+x-y+\frac{1}{2} &= 0,  \nonumber  \\
+x^2 + y^2 - 1 &= 0 \nonumber 
+\end{empheq}
+となり、解くと$\qty(x,y,\lambda,\alpha) = \qty(\qty(-1\pm\sqrt{7})/4,\qty(1\pm\sqrt{7})/4,0,-1)$となるが、$\alpha > 0$でないため不適である。以上より求める点は$(-1/4,1/4),~$その最小値は$f(-1/4,1/4)=1/8$とわかった。ちなみに点$\qty(x,y)=\qty(\qty(-1\pm\sqrt{7})/4,\qty(1\pm\sqrt{7})/4)$は円と直線の交点である。
+\qitem \label{例２}問題をもう少し難しくしたい。前の例\qref{あ}では放物面の頂点は円$x^2+y^2-1\le 0$の中にあったが、それを円の外に移動させて目的関数を$f(x,y)=\qty(x-1)^2+\qty(y-1)^2$として、最小となる点を求めてみる。ラグランジュ関数は
+$$L(x,y,\lambda,\alpha)=\qty(x-1)^2+\qty(y-1)^2+\lambda\qty(x-y+\frac{1}{2})+\alpha\qty(x^2+y^2-1),$$
+KKT条件は
+\begin{empheq}[left={\empheqlbrace}]{align}
+\pdv{L}{x} &= 2(x-1) + \lambda + 2\alpha x = 0 ,\nonumber \\
+\pdv{L}{y} &= 2(y-1) - \lambda + 2\alpha y = 0, \nonumber  \\
+\pdv{L}{\lambda} &= x-y+\frac{1}{2} = 0,  \nonumber \\
+\pdv{L}{\alpha} &= x^2 + y^2 - 1 \le 0, \nonumber \\
+\alpha &  \qty(  x^2   + y^2 -1 ) = 0, \nonumber \\
+\alpha &\ge 0 \nonumber 
+\end{empheq}
+となる。先ほどの計算例\qref{あ}と同様に場合分けして解く。
+
+$\alpha=0$のとき、KKT条件は
+\begin{empheq}[left={\empheqlbrace}]{align}
+ 2(x-1) + \lambda  &= 0 ,\nonumber \\
+ 2(y-1) - \lambda  &= 0, \nonumber  \\
+x-y+\frac{1}{2} &= 0,  \nonumber \\
+x^2 + y^2 - 1 &\le 0 \nonumber 
+\end{empheq}
+となり、最初の３つの等式から$\qty(x,y,\lambda)=\qty(3/4,5/4,1/2)$となる。しかしそれだと$x^2+y^2-1=9/8$となり、第４の不等式を満たさないため、解は存在しない。$\alpha > 0$のときKKT条件は
+\begin{empheq}[left={\empheqlbrace}]{align}
+ 2(x-1) + \lambda  +2\alpha x&= 0 ,\nonumber \\
+ 2(y-1) - \lambda  +2\alpha y&= 0, \nonumber  \\
+x-y+\frac{1}{2} &= 0,  \nonumber \\
+x^2 + y^2 - 1 &= 0 \nonumber 
+\end{empheq}
+となり、その解は$\qty(x,y,\lambda,\alpha) = \qty(\qty(-1\pm \sqrt{7})/4,\qty(1\pm \sqrt{7})/4,\pm 2/\sqrt{7},(-7\pm 4\sqrt{7})/7)$で、$\alpha>0$であるのは
+$$\qty(x,y,\lambda,\alpha)= \qty(\frac{-1+\sqrt{7}}{4},\frac{1+\sqrt{7}}{4},\frac{2}{\sqrt{7}},\frac{-7+4\sqrt{7}}{7})$$
+である。この求められた点は、円と直線の交点のうち第１象限にあるものの位置である。
+\qitem \label{例３}さらに難しくする。設定を３次元にして、目的関数も少し複雑にする。平面$x+y+2z-1=0$が、半径$1$の球$x^2+y^2+z^2-1\le0$をスライスする断面（図\ref{ball}）のなかで、目的関数$f(x,y,z)=2x^2 +y^2-z^2$が最小となるような位置を求めてみる。こうなると図形的に考えるのは難しくなる。一般化ラグランジュ関数は
+$$L(x,y,z,\lambda,\alpha)=2x^2 +y^2-z^2 + \lambda \qty(x+y+2z-1) + \alpha \qty(x^2+y^2+z^2-1)$$
+で、KKT条件は
+\begin{empheq}[left={\empheqlbrace}]{align}
+\pdv{L}{x} &= 4x + \lambda + 2\alpha x = 0 ,\nonumber \\
+\pdv{L}{y} &= 2y  + \lambda + 2\alpha y = 0, \nonumber  \\
+\pdv{L}{z} &= -2z  + 2 \lambda - 2\alpha z = 0, \nonumber  \\
+\pdv{L}{\lambda} &= x+y+2z-1 = 0,  \nonumber \\
+\pdv{L}{\alpha} &= x^2 + y^2 -z^2- 1 \le 0, \nonumber \\
+\alpha &  \qty(x^2 + y^2 -z^2- 1) = 0, \nonumber \\
+\alpha &\ge 0 \nonumber 
+\end{empheq}
+となる。$\alpha = 0$と$\alpha > 0$に分けて解けば、解は$\alpha=0$のときのみ求まる。
+$$\qty(x,y,z,\lambda,\alpha)=\qty(-\frac{1}{5}, -\frac{2}{5}, \frac{4}{5},\frac{4}{5},0),~~~f\qty(-\frac{1}{5}, -\frac{2}{5}, \frac{4}{5})= -\frac{2}{5}.$$
+
+
+      
+      
+\qitem \label{例４}このやり方は制約条件がいくつになっても（等式制約または不等式制約がゼロ個になっても）同じ。たとえば図\ref{houbutusen}のように$2$次元平面において２つの放物線$y=x^2$と$y=-\qty(x+1/2)^2+1$に囲まれる領域$\qty{\qty(x,y) \middle| x^2 \le y \le -\qty(x+1/2)^2+1}$のうち、$f(x,y)=x^2 y$の値が最小となる点を求めてみる。不等式制約は２個で、等式制約はゼロ個である。このとき一般化ラグランジュ関数は
+$$L(x,y,\alpha_1,\alpha_2) = x^2 y + \alpha_1 \qty(x^2 - y) + \alpha_2 \qty[y+\qty(x+\frac{1}{2})^2-1]$$
+であり、KKT条件は
+\begin{empheq}[left={\empheqlbrace}]{align}
+\pdv{L}{x} &= 2xy + 2 \alpha_1 x + 2 \alpha_2 \qty(x+ \frac{1}{2})= 0 ,\nonumber \\
+\pdv{L}{y} &= x^2 - \alpha_1 + \alpha_2  = 0, \nonumber  \\
+\pdv{L}{\alpha_1} &= x^2 - y \le 0, ~~~\pdv{L}{\alpha_2} = y+\qty(x+\frac{1}{2})^2-1 \le 0, \nonumber \\
+\alpha_1 &   \qty(x^2 - y) = 0,~~~\alpha_2    \qty[y+\qty(x+\frac{1}{2})^2-1] = 0, \nonumber  \\
+\alpha_1 &\ge 0,~~~\alpha_2 \ge 0 \nonumber
+\end{empheq}
+となる。$\alpha_1=0,~\alpha_2=0$のときは$x=0,~0\le y \le 3/4$が得られ、そのとき$x^2 y $の値は$0$である。$\alpha_1=0,~\alpha_2 > 0$のときは第２の条件より実数解は存在しないことがわかる。$\alpha_1 > 0,~\alpha_2 = 0$のとき$\alpha_1=0$が連立方程式の解として求められるがこれは矛盾するため解は存在しない。$\alpha_1 > 0,~\alpha_2 > 0$のとき、計算すると$\alpha_2=\qty(-35\pm11\sqrt{7})/56$が得られるが、どちらの符号を選択しても負になるため矛盾し、解は存在しないことがわかる。以上より$x^2 y$が最小値をとるのは$0\le y \le 3/4$の$y$軸上であり、その値は$0$であることがわかった。
+\qitem \label{例５}KKT法は必ずしも万能ではなく、正しい解を得られない場合がある。例えば制約による領域が凸領域\footnote{凸領域とは、凹んでいない領域のこと。数学的には「領域内の任意の２点を結んだ線分が、必ず領域内にあるような領域」と定義される。}でないとき、うまくいかない場合がある\textcolor{red}{凹んでいる部分でもうまくいきます。すると領域に穴があいているような状況でも、これは凸領域ではありませんが、うまくいく気がします}。その例として、放物線の下側の領域$y-x^2 \le 0$のなかで（図\ref{reverse_parabola}）、目的関数$f(x,y)=x^2+(y-1)^2$が最小となる点をKKT法を用いて求めると、\textcolor{red}{最適解の候補として$(x,y,\alpha)=(0,0,2),(\pm 1/\sqrt{2},1/2,1)$が得られる。それぞれ目的関数の値を計算すると$f(0,0)=1,~f(\pm 1/\sqrt{2},1/2)=3/4$より求める最小点は$(\pm 1/\sqrt{2},1/2).~~$}$(x,y,\alpha)=(0,0,2)$で最小値$f(0,0)=1$が求まる。しかしこれは誤りである。$f(x,y)$は点$(0,1)$を中心として同心円状に高くなってゆく放物面であり、点$(0,1)$から最短距離にある$y=x^2$上の点で最小となる。そのような点を求めると$(x,y)=(\pm 1/\sqrt{2},1/2)$となり、そのとき目的関数は$f(\pm 1/\sqrt{2},1/2)=3/4$という値をとるため、KKT法による解は間違っている。これは領域が凸でないことに起因する。
+%2枚の図
+\begin{figure}[htbp]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=75mm]{houbutusen.png}
+  \end{center}
+  \caption{例\qref{例４}の制約条件による領域}
+  \label{houbutusen}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=65mm]{reverse_parabola.png}
+  \end{center}
+\caption{赤い領域が例\qref{例５}の制約条件による領域。これは凸領域ではない。また点$(0,1)$を中心として放物線と接する円も載せておいた。}
+\label{reverse_parabola}
+ \end{minipage}
+\end{figure}
+
+\end{qlist}
+
+
+\section{補足・説明}
+\subsection{なぜ$\vb*{\alpha}\odot \vb*{h}(\x)=\vb*{0}$が必要か？}
+式(\ref{alpha'})の相補性条件$\vb*{\alpha}\odot \vb*{h}(\x)=\vb*{0}$の意味を説明する。（局所的）極小点は制約条件による領域$\mathbb{S}=\qty{\x \middle| g_i(\x)=0 \land h_j (\x) \le 0, ~i=1,\ldots,m,~j=1,\ldots,n}$の内側または外側にある。もし$\mathbb{S}$の内側にあるならば不等式制約は解に影響せず、不等式制約はもともとなくてもよかったものと考えられる。つまり単純にその（局所的）極小点を求めればよい。そのこのことは$\alpha_j = 0$として式(\ref{lag})の$L(\x, \vb*{\lambda},\vb*{\alpha})$から排除することで表現できる。あるいは（局所的）極小点が$\mathbb{S}$の外側にあるとすると、最小点$\x^\ast$は$\mathbb{S}$の境界上に存在する。そのとき不等式制約は等式制約$h_j(\x)=0$として考えることができるので、通常のラグランジュの未定乗数法に帰着する。これらの２通りの場合をまとめると$\vb*{\alpha}\odot \vb*{h}(\x)=\vb*{0}$という条件にまとめられる。\\
+
+\subsection{なぜ$\alpha_j \ge 0$が必要か？}
+%１枚の画像
+\begin{figure}[htbp]
+\centering 
+\includegraphics[width=120mm]{contour.png}
+\caption{等高線地図（ホワイトボードに映してその上に書きこみながら説明したいと思います）}
+\label{}
+\end{figure}
+
+式(\ref{alpha''})の条件$\alpha_j \ge 0$の意味を説明をする。簡単のため目的関数が２変数関数の場合を説明するが、より多変数になっても同じである。目的関数$z=f(\x)=f(x,y)$の等高線を$x$-$y$平面に射影すれば、$f(\x)$の等高線地図が得られ、$\mathbb{S}$はその地図上の領域として図示することができる。もし$f(\x)$の（局所的）極小点が$\mathbb{S}$の内部にあるならば、$\alpha_j=0$としてラグランジュの未定乗数法でそれを求めればよい。
+
+いっぽうで、（局所的）極小点が$\mathbb{S}$の外部にあるときには、求める最小点$\x^\ast=(x^\ast,y^\ast)$は$\mathbb{S}$の境界上に存在することになる。さらに簡単のため$\mathbb{S}$は凸領域であるとする。最小点$\x^\ast$のある境界の部分が、仮にある１本の曲線$h_a(\x)=0$で表されていたとすると、最小点$\x^\ast$における$f(\x)$の等高線と曲線$h_a(\x)=0$は平行となっているはずである（なぜならばその点において平行でないならば、$h_a(\x)=0$上における$z=f(\x)$の標高がもっと低い場所があるはずである）。したがってその点における$f(\x)$の勾配ベクトル$-\grad f(\x^\ast)$と$\grad h_a(\x^\ast)$も平行になるため、$-\grad f(\x^\ast) = \alpha_a \grad h_a(\x^\ast)$という比例的な関係が得られる。ここで$-\grad f(\x^\ast)$は標高の高いところから低いところへ向かうベクトルで、$\grad h_a(\x^\ast)$は$\mathbb{S}$の外側を向き、$h_a(\x)=0$の曲線と垂直なベクトルである。この考察から、比例定数$\alpha_a$は正、または極小点の場合はゼロであることがわかる。$-\grad f = \alpha_a \grad h_a$より$\grad(f+\alpha g)=\vb*{0}$となり、一般化ラグランジュ関数の一部$f+\alpha g$がここで得られる。
+
+最小点$\x^\ast$のある境界の部分が、複数の曲線$h_a=0,~h_b=0,\ldots$の交点であるならば、$-\grad f$は$\grad h_a,~\grad h_b,\ldots$の線型結合と平行になる。すなわち$-\grad f= \alpha_a \grad h_a + \alpha_b \grad h_b + \cdots$であり、係数$\alpha_a,~\alpha_b,\ldots$は正である。\\
+
+\subsection{制約が満たすべき条件}
+係数$\alpha_a,~\alpha_b,\ldots$は正であるという条件のもとでうまくいくのは、$\mathbb{S}$が凸領域であるからである。なぜならばもし最小点$\x^\ast$が領域の凹んでいる部分の境界にあるならば、$\grad h_a(\x^\ast)$などは$-\grad f(\x^\ast)$と反平行になるため、線型結合の係数が正であるのは誤りになる。計算例\qref{例５}はこれに該当する。したがってKKT法がうまくいくのは、極小点が領域の内部にあるときか、極小点が外部にあっても最小点が領域の（すくなくとも）膨らんだ部分にあるときであるとわかる。\\ 
+
+このような、制約が満たすべき条件（制約想定）は他にもいくつかあるので、以下にリストアップしておく（\cite{最適化と変分法}より）。
+ただし不等式制約$h_j(\x) \le 0$の関数$h_j$のうち、active（有効であるとか活性であるなどと訳される。曲線$h_j(\x)=0$の上に最小点$\x^\ast$を持つということ。）なものの添え字$j$の集合を$J_0=\qty{j \in \qty{1,\ldots , n} \middle| h_j(\x^\ast) =0 }$とする。
+\begin{itemize}
+ \item １次独立制約想定：$\grad h_j (\x^\ast)~(j \in J_0)$と$\grad g_i ~(i =1,\ldots,m)$は１次独立である。
+ \item Slater制約想定：
+  \begin{itemize}
+   \item $h_j~(j \in J_0)$は凸関数である。
+   \item $g_i~(i=1,\ldots m)$は１次関数で、$\grad g_i (\x^\ast)~ (i=1,\ldots m)$が１次独立である。
+   \item $h_j(\hat{\x}) < 0~(j=1,\ldots,n)$を満たす実行可能解$\hat{\x}$が存在する。
+  \end{itemize}
+  \item Mangasarian--Fromovitz制約想定：
+  \begin{itemize}
+   \item $\grad g_i(\x^\ast) ~(i=1,\ldots,m)$が１次独立である。
+   \item 条件
+          \begin{eqnarray*}
+           \grad h_j (\x^\ast) \vdot \vb*{d} &<& 0,~~~\forall j \in J_0, \\
+           \grad g_i (\x^\ast) \vdot \vb*{d} &=& 0,~~~\forall i = 1,\ldots,m
+          \end{eqnarray*}
+          を満たす$\vb*{d}$が存在する。ただし$\vb*{d}$は$\x$と同じサイズのベクトル。
+  \end{itemize}
+\end{itemize}
+これらの制約想定のいずれかが満たされるという仮定のもとで、KKT条件は最適性の必要条件となる。さらに参考文献\cite{最適化と変分法}によれば、他にもさまざまな制約想定が提案されているという。
+
+\subsection{最大化をしたいとき}
+最大化をしたいときは、目的関数の符号を反転させて$-f(\x)$を最小化すると考え、KKT法を用いればよい。あるいは目的関数はそのままで、式(\ref{alpha''})の条件を$\alpha_j \le 0$とすればよい。なぜならば（局所的）極大値が領域外にあって最大点が領域の境界にあるとき、その最大点における目的関数の勾配ベクトル$-\grad f$と境界線の勾配ベクトル$\grad h_a$は反平行になるため、$-\grad f=\alpha_a \grad h_a$かつ$\alpha_a < 0$が成り立つからである。
+
+
+
+\begin{comment}
+\begin{itemize}
+ \item 「実現可能点が存在し、$f(\x)$が$\infty$の値を取らない場合、$\displaystyle\min_{\x}\displaystyle\max_{\vb*{\lambda}}\displaystyle\max_{\vb*{\alpha},\alpha \ge 0} L(\x,\vb*{\lambda},\vb*{\alpha})$と$\displaystyle\min_{\x \in \mathbb{S}} f(\x)$は同じ最適点と最適値をもつ。なぜならば制約が満たされる場合は必ず$\displaystyle\max_{\vb*{\lambda}}\displaystyle\max_{\vb*{\alpha},\alpha \ge 0} L(\x,\vb*{\lambda},\vb*{\alpha})=f(\x)$であり、制約が満たされなければ$\displaystyle\max_{\vb*{\lambda}}\displaystyle\max_{\vb*{\alpha},\alpha \ge 0} L(\x,\vb*{\lambda},\vb*{\alpha}) = \infty$であるからである。」 がわからない！
+\end{itemize}
+\end{comment}
+
+
+
+
+\begin{thebibliography}{9}
+   \bibitem{最適化と変分法} 寒野善博，土谷隆（2013年），「最適化と変分法」，東京大学工学教程編纂委員会，pp. 61--74
+   \bibitem{} 小西貞則（2010年），「多変量解析入門--線形から非線形へ」，pp. 290--293.
+   \bibitem{} そのほかWikipediaの「カルーシュ・クーン・タッカー条件」「ラグランジュの未定乗数法」のページや、ネットで検索すればヒットするPDF「\url{http://www2.kaiyodai.ac.jp/~yoshi-s/Lectures/Optimization/2012/lecture_4.pdf}」などを見て勉強した（最終閲覧日は\today）。
+  
+\end{thebibliography}
+\end{document}

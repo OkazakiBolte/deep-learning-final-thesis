@@ -1,0 +1,41 @@
+This is e-upTeX, Version 3.14159265-p3.8.2-u1.24-190131-2.6 (utf8.uptex) (TeX Live 2019) (preloaded format=uplatex 2019.12.28)  4 JAN 2020 17:53
+entering extended mode
+ restricted \write18 enabled.
+ file:line:error style messages enabled.
+ %&-line parsing enabled.
+**docume.ltx
+(./docume.ltx
+pLaTeX2e <2019-04-06u02> (based on LaTeX2e <2018-12-01>)
+
+LaTeX Warning: You have requested package `',
+               but the package provides `docmute'.
+
+Package: docmute 2012/03/22 v1.4 Input stand-alone documents
+
+./docume.ltx:12: LaTeX Error: Missing \begin{document}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.12 \let\docmute@d
+                   ocument=\document
+? 
+./docume.ltx:12: Emergency stop.
+ ...                                              
+                                                  
+l.12 \let\docmute@d
+                   ocument=\document
+You're in trouble here.  Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+ 
+Here is how much of TeX's memory you used:
+ 7 strings out of 493212
+ 183 string characters out of 6144391
+ 62384 words of memory out of 5000000
+ 4107 multiletter control sequences out of 15000+600000
+ 6281 words of font info for 32 fonts, out of 8000000 for 9000
+ 929 hyphenation exceptions out of 8191
+ 7i,0n,4p,89b,14s stack positions out of 5000i,500n,10000p,200000b,80000s
+No pages of output.

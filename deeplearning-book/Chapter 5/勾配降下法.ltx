@@ -1,0 +1,103 @@
+%\documentclass{jsarticle}
+%\documentclass[draft]
+%\documentclass[dvipdfmx,autodetect-engine,draft]{jsarticle}% autodetect-engine で pLaTeX / upLaTeX を自動判定
+\documentclass[dvipdfmx,autodetect-engine]{jsarticle}% autodetect-engine で pLaTeX / upLaTeX を自動判定
+
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{url}
+\usepackage{bm}
+\usepackage{comment}
+%\usepackage{split}
+\usepackage{multirow}
+\usepackage{listings,jlisting}
+\usepackage{braket}
+\usepackage{physics}
+\usepackage{xparse,amsmath}
+\usepackage{here}
+\usepackage{enumerate}
+\usepackage{mathrsfs}
+%\usepackage{jlistings} %日本語のコメントアウトをする場合jlistingが必要
+\setcounter{tocdepth}{3}
+\usepackage{amsmath,amssymb}
+
+\usepackage{empheq}
+
+
+
+\def\T{\mathsf{T}}
+\newcommand{\argmin}[2]{\underset{#1}{\mathrm{argmin}}{~#2}}
+
+\begin{document}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+\begin{flushright}
+\today
+\\慶應義塾大学理工学部物理学科\\岡崎健人
+\end{flushright}
+\begin{center}
+{\Large 勾配降下法~自分用教科書} 
+\end{center}
+%箇条書き
+%\tableofcontents   %👈目次
+%\newpage
+
+\begin{comment}
+\begin{table}[htbp]
+\begin{tabular}{rl}
+記号 & 定義 \\
+ $\mathbb{X}$ & $m$個の訓練集合   \\
+ $\vb*{x}^{(i)}$ & $\mathbb{X}$の要素（$i=1\ldots,m$）。$n$個の成分を持つ。 \\
+ $y^{(i)}$ & 訓練データ$\mathbb{X}$に対する何らかの値。クラスなど。  \\
+ $\vb*{y} = \qty[y^{(1)}, \ldots, y^{(m)}]^\T$ & 
+\end{tabular}
+\end{table}
+\end{comment}
+
+$m$個の訓練データ$\qty(\vb*{x}^{(i)}, y^{(i)}),~i=1\ldots,m$が与えられたとする。$\vb*{x}^{(i)}=\qty[x_{1}^{(i)} , \ldots , x_{n}^{(i)}]^\T$は$n$個の成分を持つベクトルである。スカラーの基底関数を$\phi_{j} (\vb*{x}),~j=1,\ldots,k$とすれば、計画行列$X$の要素は$\qty(X)_{ij}= \phi_{j}\qty(\vb*{x}^{(i)})$である。$\vb*{\phi}\qty(\vb*{x}) = \qty[\phi_1(\vb*{x}) , \ldots , \phi_k(\vb*{x}) ]^\T,~\vb*{\theta} = \qty[\theta_1 , \ldots , \theta_k]^\T$
+として、訓練データによる$y$の推定量を$$\hat{y} =\displaystyle\sum_{j=1}^{k} \theta_j \phi_j \qty(\vb*{x}) =  \vb*{\theta}^\T \vb*{\phi} (\vb*{x}) $$と展開できるとする。さらに各訓練データ$\vb*{x}^{(i)}$に対してこの推定値を計算したものを$\hat{y}^{(i)}= \vb*{\theta}^\T \vb*{\phi} \qty(\vb*{x}^{(i)}) $とする。それを並べたベクトルを$\hat{\vb*{y}} = \qty[\hat{y}^{(1)} , \ldots , \hat{y}^{(m)}]^\T$と表記すれば、$\hat{\vb*{y}} = X \vb*{\theta}$と簡潔に書ける。
+
+$y$の訓練データと推定量の平均二乗誤差（mean squared error）はパラメータ$\vb*{\theta}$の関数であり、これを$\mathrm{MSE}\qty(\vb*{\theta})$と記す。
+$$ \mathrm{MSE}\qty(\vb*{\theta}) = \frac{1}{m} \sum_{i = 1}^{m} \qty( \hat{y}^{(i)} - y^{(i)} )^2 = \frac{1}{m} \norm{ \hat{\vb*{y}} - \vb*{y}}_{2}^{2} = \frac{1}{m} \norm{ X \vb*{\theta} - \vb*{y}}_{2}^{2}$$
+
+
+\section{バッチ勾配降下法}
+関数$J(\vb*{\theta})$はパラメータのベクトル$\vb*{\theta}$によって特徴付けられている。この関数をバッチ勾配降下法（batch gradient descent, BGD）を用いて最小化することがここでの目的である。
+
+まず初期値$\vb*{\theta}_0$をランダムに選び、その点での勾配$\grad_{\vb*{\theta}} J\qty( \vb*{\theta}_0)$を計算する。そして
+$$ J(\vb*{\theta}_1) \leftarrow J(\vb*{\theta}_0) - \vb*{\eta}^\T  \grad_{\vb*{\theta}} J(\vb*{\theta}_0)$$
+のように関数$J(\vb*{\theta})$を更新する。さらにその点$\vb*{\theta}_1$を初期値として同じ操作を反復すれば、最小点$\argmin{\vb*{\theta}}{J\qty(\vb*{\theta})}$に収束する。係数のベクトル$\vb*{\eta} = \qty[ \eta_1 , \ldots , \eta_k ]^\T$の成分あるいはベクトル自体のことを、ステップ幅あるいは機械学習の文脈では学習率（learning rate）とよばれる。
+
+数値計算上では、関数の微分はその定義の近似を用いればよい。
+$$\dv{f(x)}{x} = \lim_{\Delta x \to 0} \frac{f(x + \Delta x) - f(x)}{ \Delta x} \approx  \frac{f(x + \Delta x) - f(x)}{ \Delta x}.$$
+
+学習率の値は大きすぎず小さすぎないのがよい。もし学習率が大きすぎると、ステップごとに最小点を通り過ぎてしまい、収束が遅くなるか収束できなくなるからである。反対に小さすぎると１ステップが小さいため収束が遅くなる。
+
+関数$J(\vb*{\theta})$が$m$個の訓練データから得られる平均二乗誤差$\mathrm{MSE}\qty( \vb*{\theta} )$であることはよくある。その場合、勾配降下法はコストが高い方法である。訓練データの数を$m,~$パラメータの数を$k$とすれば、平均二乗誤差は$m$項からなる。パラメータのそれぞれの成分についての微分を計算するので、１ステップあたり$m\times k$回の計算が必要である。ステップは1000回行うことが普通であるので、例えば$m=10000,~k=10$であるとすれば全体で$10^8$回の計算が必要になってしまい、データ数が大きいと遅いアルゴリズムであることがわかる。
+
+\section{確率的勾配降下法}
+バッチ勾配降下法ではコスト関数は各データに関する項の和の形
+$$J\qty(\vb*{\theta}) = \sum_{i=1}^{m} J_i \qty(\vb*{\theta})$$
+をしていた。このニュアンスを強調して上のアルゴリズムをバッチ勾配降下法（batch gradient descent）とよぶ。それに対して訓練データからランダムに１つ選んで、そのコスト関数のみについての勾配を計算して更新してゆく手法を確率的勾配降下法（stochastic gradient descent）という。訓練データはステップごとに選び直す。
+
+確率的な性質を持つため、最小点に向かってゆく仮定は複雑になる。平均的には最小値に向かって緩やかに小さくなっていくのだが、最小値周りに達すると勾配は様々な方向を向いているので、１箇所に落ち着くことがない。そのため確率的勾配降下法による最終的なパラメータは十分よいものだが最適ではない。
+
+しかしコスト関数が複数の極小値を持つような複雑な関数の場合、確率的な性質のおかげで、関数の谷となっている部分から抜け出し、真の最小値にたどり着く可能性は大きくなる。
+
+まとめると確率的勾配降下法は、その無作為性によって局所的な最小値から逃れる可能性はあがるが、最小値に落ち着かないというジレンマをもつ。その問題を解決するために、勾配の大きさに応じて学習率を変化させる方法がある。勾配が大きければ大きく前進し、勾配がゼロに近くなったら慎重に前進するのだ。金属が結晶化する過程がヒントになっていて、このアルゴリズムを焼きなまし法（simulated annealing）とよぶ。
+
+\section{ミニバッチ勾配降下法}
+ミニバッチ勾配降下法（minibatch gradient descent）はバッチ勾配降下法と確率的勾配降下法の中間的なアルゴリズムである。ステップごとに訓練データから複数個のデータをランダムに抜き出して、それらのコスト関数の勾配から最小値を探し出す。ランダムに選ばれた訓練データの集合をミニバッチとよぶ。$N$ステップ目の、$m'$個の訓練データからなるミニバッチを$\mathbb{B}_{N}$と表せば、$N$ステップ目のコスト関数は
+$$J_N(\vb*{\theta}) = \sum_{\vb*{x}^{(i)} \in \mathbb{B}_N} J_i\qty(\vb*{\theta}) = \frac{1}{m'} \sum_{\vb*{x}^{(i)} \in \mathbb{B}_N} \qty( \hat{y}^{(i)} - y^{(i)} )^2$$
+とかける。
+
+
+
+
+
+
+
+
+
+
+\end{document}

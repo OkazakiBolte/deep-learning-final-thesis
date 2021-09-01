@@ -1,0 +1,109 @@
+\documentclass[a4paper,11pt,oneside,openany,uplatex]{jsbook}
+\input{/Users/bolte/Desktop/my_palace/programming/深層学習/卒業論文/settings.ltx}
+\graphicspath{{/Users/bolte/Desktop/my_palace/programming/深層学習/卒業論文/fig/}}
+
+\begin{document}
+\chapter{考察}
+%\red{
+\section{「漏斗型」ニューラルネットワークにおけるパラメータ数の計算}
+実装の節\ref{subsec : 隠れ層を３層以上に増やした場合の性能評価}において、隠れ層のユニット数を順方向に$ n_{\mathrm{out}} a^{N}, ~n_{\mathrm{out}} a^{N - 1}  ,~  \ldots ,~ n_{\mathrm{out}} a^{2}  ,~ n_{\mathrm{out}} a$のように指数関数的に減らしていく「漏斗型」ニューラルネットワークを考案した。ただし$N$は隠れ層の層数で、$n_{\mathrm{out}}$は出力層のユニット数、$a$は自然数である。$n_{\mathrm{in}}$を入力層のユニット数として、このネットワークでの層パラメータの数$N_{\mathrm{params}}$を求める。
+
+全結合型のネットワークであるとすれば、図\ref{fig : num-params}のようにユニット数$x$の層１の出力がユニット数$y$の層２の入力として通るとすると、重みの数は$xy$だけある。さらに層２の各ユニットはバイアスを１つ持っているので、このとき総パラメータ数は$x y + y$だけある。
+%１枚の画像
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=70mm]{fig-num-params}
+\caption{パラメータの数は$xy + y$}
+\label{fig : num-params}
+\end{figure}
+
+同様に考えて、まずユニット数$n_{\mathrm{in}}$の入力層とユニット数$ n_{\mathrm{out}} a^{N}$の第１隠れ層の間のパラメータ数は$ n_{\mathrm{in}} \times  n_{\mathrm{out}} a^{N} + n_{\mathrm{out}} a^{N}$であり、第１隠れ層と第２隠れ層の間のパラメータ数は$n_{\mathrm{out}} a^{N} \times n_{\mathrm{out}} a^{N - 1} + n_{\mathrm{out}} a^{N - 1}$である。これを出力層まで辿って足してゆくと、
+\begin{eqnarray*}
+N_{\mathrm{params}}
+&=& \qty(n_{\mathrm{in}} \times  n_{\mathrm{out}} a^{N} + n_{\mathrm{out}} a^{N}) + \qty(n_{\mathrm{out}} a^{N} \times n_{\mathrm{out}} a^{N - 1} + n_{\mathrm{out}} a^{N - 1}) \\
+&~~~~& + \cdots + \qty(n_{\mathrm{out}} a^{1} \times n_{\mathrm{out}} a^{0} + n_{\mathrm{out}} a^{0} ) \\
+&=& n_{\mathrm{in}} n_{\mathrm{out}} a^{N} + n_{\mathrm{out}}^{2} \sum_{ k = 1}^{N} a^{2k - 1}+ n_{\mathrm{out}} \sum_{k = 0 }^{N} a^{k} \\
+&=&n_{\mathrm{in}}  n_{\mathrm{out}} a^{N} + n_{\mathrm{out}}^{2} a \cdot \frac{a^{2N} - 1}{a^{2} - 1} + n_{\mathrm{out}} \frac{a^{N + 1} - 1}{a-1}
+\end{eqnarray*}
+となる。$n_{\mathrm{in}} = 784,~ n_{\mathrm{out}} = 10 , ~ a = 2 , ~ N = 6$として計算すると$N_{\mathrm{params}}  = 776030$となり、確かに表\ref{tab : 隠れ層を３層以上に増やした場合の性能評価}で得られた結果と一致する。
+
+%ONAJIPARAME-TASUUDESOUSUU,UNITTOSUUGATIGAUKAKURESOUWOMOTUNYU-RARUNETTOWA-KUNOSEINOUHAONAJINANNDAROUKA?
+  \section{より精度の高いフィードフォーワード・ニューラルネットワークの構築}
+第\ref{chap : 結果}章の結果から、フィードフォーワード・ニューラルネットワークにおいては以下の状況のときに性能が良くなることがわかった。
+\begin{itemize}
+  \item 活性化関数：ReLU
+  \item コスト関数：交差エントロピー
+  \item 最適化アルゴリズム：Adam
+  \item エポック数：$100$
+  \item ミニバッチのサイズ：$100$
+  \item アーキテクチャ：隠れユニット数が出力層に向かって半減していくような「漏斗型」の構造
+\end{itemize}
+この設定のニューラルネットワークを作り同様に学習させたところ、次の結果を得た。
+\begin{quote}
+\begin{verbatim}
+Test loss: 0.15242414196143
+Test accuracy: 0.986600008010864
+Computation time:434.38 sec
+\end{verbatim}
+\end{quote}
+学習に$7.5$分かかったが、これまでのフィードフォーワード・ニューラルネットワークで最も高い正解率を出している。
+
+
+  \section{より精度の高い畳み込みニューラルネットワークの構築}
+  節\ref{sec : 畳み込みニューラルネットワークによる学習}の畳み込みニューラルネットワークに関する一連の実験により、以下の状況のときに性能が良くなることがわかった。
+  \begin{itemize}
+  \item フィルターのサイズ：$3 \times 3$から$5 \times 5$程度の小さいフィルターを用いるとよい
+  \item プーリング
+   \begin{itemize}
+     \item 畳み込みと併用する
+     \item 平均プーリングではなく最大プーリングのほうがよい
+     \item プーリングカーネルのサイズは$2 \times 2$など小さいものがよい
+   \end{itemize}
+  \item ドロップアウト
+    \begin{itemize}
+      \item ドロップアウト率は$p = 0.25$程度がよい
+      \item ユニット数が大きい（パラメータ数の大きい）層の間で用いるとよい
+      \item ただしドロップアウトをしすぎると学習が遅くなることがある
+    \end{itemize}
+  \item アーキテクチャ：畳み込みのフィルター数が出力に向けて大きくなってゆくような「末広がり」のネットワーク
+\end{itemize}
+
+  以上のことを踏まえて、図\ref{fig : Bolte-network}のような畳み込みニューラルネットワークとフィードフォーワード・ネットワークを組み合わせたネットワークを構築し、学習をさせた。入力が$32 \times 32$になるようにゼロパディングを施し、$16$枚の$5 \times 5$のフィルターを用いて畳み込み層C1を生成した。次に$2 \times 2$の最大プーリングを行ってプーリング層S2を得た。同様に$32$枚の$5 \times 5$の畳み込み、$2 \times 2$の最大プーリングを行ったのち$800$次元のベクトルに展開した（Flatten層C5）。ここから先は通常のフィードフォーワード・ネットワークであるが、ユニット数が$25$になるまでユニット数を半減させていった（C5〜F10）。またF6--F7の間とF7--F8の間でドロップアウト率$p = 0.25$のドロップアウトを行なった。
+
+  活性化関数は出力層以外はすべてReLUを用い、出力層はソフトマックス関数を用いた。コスト関数は交差エントロピー、最適化アルゴリズムにはAdamを採用した。エポック数は$20,~$ミニバッチのサイズは$1000$とした。
+
+  %１枚の画像
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=140mm]{fig-Bolte-network.png}
+\caption{集大成のニューラルネットワーク}
+\label{fig : Bolte-network}
+\end{figure}
+
+図\ref{fig : Bolte-network}のネットワークに学習を行わせ、結果を表示すると次のようになった。
+\begin{quote}
+\begin{verbatim}
+Test loss: 0.02598600876271721
+Test accuracy: 0.9923
+Computation time:455.795 sec
+\end{verbatim}
+\end{quote}
+ 実行時間は$7.5$分と短くはないがそこまで長くはない。また正解率は$99.23\%$となり、これまでで最高の正解率を得た。念のため学習曲線を表示すると図\ref{fig : Bolte-network-lc}となった。これにより過学習はしておらず、正しく学習がなされていることがわかる。
+ %１枚の画像
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=120mm]{lc/80.png}
+\caption{「集大成のニューラルネットワーク」の学習曲線}
+\label{fig : Bolte-network-lc}
+\end{figure}
+
+
+
+
+%  \section{その他}
+%  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+ % }
+%    \subsection{}
+%      \subsubsection{}
+
+\end{document}

@@ -1,0 +1,28 @@
+\documentclass[a4paper,11pt,oneside,openany,uplatex]{jsbook}
+\usepackage{docmute}
+\input{/Users/bolte/Desktop/my_palace/programming/深層学習/卒業論文/settings.ltx}
+%
+\graphicspath{{/Users/bolte/Desktop/my_palace/programming/深層学習/卒業論文/fig/}}
+\begin{document}
+% Insert bastract
+\vspace*{\stretch{1}}
+\begin{Abstract}
+\begin{changemargin}{1cm}{1cm}
+
+%　機械学習とは明示的にプログラミングせずに、コンピュータが十分な量のデータからその特徴や傾向を発見し、未知の事例に対しても予測を行うための科学分野である。
+\cyan{　機械学習とは、コンピュータが十分な量のデータからその特徴や傾向を発見して、新たな事例に対して予測を行うことを目指した研究分野である。}
+画像認識や音声認識、株価の予測、機械による多言語間の翻訳、インターネット上でのおすすめの商品の提案など、現在その応用は多岐にわたっている。物理学の分野でも、欧州原子核研究機構における素粒子実験では大量のデータを解析するために機械学習が用いられている。
+
+　この卒業研究報告書では私が機械学習の基礎について学んだことをまとめ、実際に\cyan{手書き数字画像の識別をする}ニューラルネットワークを構築しその動作結果を記録した。第Ⅰ部では\cyan{、第Ⅱ部で実装したニューラルネットワークの}理解に最低限必要な数学的な知識と技法、フィードフォーワード・ニューラルネットワークと畳み込みニューラルネットワークの基本的な説明を行った。第Ⅱ部ではこれまでに学んだことを踏まえて、手書き数字のデータを分類するためのニューラルネットワークを組み立て、\cyan{隠れ層の数や最適化アルゴリズムなどを変化させて数値的に}比較と評価を行った。\cyan{さらに考察ではそれらの結果を基にして、より精度の高いニューラルネットワークの実現を試みた。すると
+正解率$98.66\%$を有する
+隠れ層が$6$層のフィードフォーワード・ニューラルネットワークと、
+正解率$99.23\%$を有する
+畳み込みニューラルネットワークとフィードフォーワード・ニューラルネットワークを組み合わせたネットワーク
+を考案することに成功した。}
+
+%Your text:\lipsum[10]
+\end{changemargin}
+\end{Abstract}
+\vspace{\stretch{2}}
+%Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+\end{document}

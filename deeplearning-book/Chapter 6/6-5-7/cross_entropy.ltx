@@ -1,0 +1,72 @@
+\documentclass[dvipdfmx,autodetect-engine]{jsarticle}
+\input{settings.ltx}
+\begin{document}
+
+%\color{magenta}
+交差エントロピー$J_{\mathrm{MLE}}$の導出方法をはっきりさせておきたい。まず多くの場合、多クラス分類において、$\vb*{y}$は$\qty[ y^{(1)} , \ldots , y^{\qty(m')} ]^{\T}$のような列ベクトルである。各成分$y^{(i)}$はクラス$k = 0 , \ldots , K$のうち、データ$\vb*{x}^{(i)}$が属するクラスを表しているものとする。例えば$\vb*{x}^{(i)}$が手書き数字の「６」の画像のデータであるならば、$K = 9 , ~ y^{(i)} = 6$である。$U^{(2)}$の正体についてよく考え直したところ、$\vb*{y}$の推定ではなく、次のような行列になるだろうという結論に至った。
+\begin{equation}
+ U^{(2)} = \mqty[ u_{0}^{(1)} & \cdots & u_{K}^{(1)} \\ 
+                                 \vdots    &            &  \vdots     \\ 
+                     u_{0}^{\qty(m ' )} & \cdots & u_{K}^{\qty(m ' )}]
+                 = \mqty[ {\vb*{u}^{(1)}}^{\T} \\ \vdots \\ {\vb*{u}^{\qty(m')}}^{\T} ] , ~~~~~ \vb*{u}^{(i)} = \mqty[ u_{0}^{(i)} \\ \vdots \\ u_{K}^{(i)} ] , ~~~~~ i = 1 , \ldots , m' .  \label{eq:U2}
+\end{equation}
+このベクトル$\vb*{u}^{(i)}$が、教科書の式6.28の$\vb*{z} = \vb*{W}^{\T} \vb*{h} + \vb*{b}$に対応している。\\
+
+なぜ$U^{(2)}$が式(\ref{eq:U2})のような行列になるかを計算によって説明する。簡単のため手書き数字認識の例を用いる。
+$$X = \mqty[ x_{1}^{(1)} & \cdots & x_{784}^{(1)} \\ \vdots　&  &　\vdots  \\  x_{1}^{\qty(m')} & \cdots & x_{784}^{\qty(m')}  ] = \mqty[ {\x^{\qty(1)}}^\T  \\ \vdots \\  {\x^{\qty(m')}}^\T] .$$
+隠れ層の中にノードが$n$個あると仮定すれば、$W^{(1)} = \qty[ \vb*{w}_{1}^{(1)} , \ldots ,  \vb*{w}_{n}^{(1)}]$のように、パラメータ$W^{(1)}$は$n$個の列ベクトル$\vb*{w}_{l}^{(1)} , ~ l = 1 , \ldots , n$を並べて作ることができる。よって$ U^{(1)} $を具体的に計算すると
+$$
+ U^{(1)} = X W^{(1)}= \mqty[ {\x^{\qty(1)}}^\T  \\ \vdots \\  {\x^{\qty(m')}}^\T] \mqty[ \vb*{w}_{1}^{(1)} , \ldots ,  \vb*{w}_{n}^{(1)}]
+ = \mqty[ {\vb*{x}^{(1)}}^{ \T} \vb*{w}_{1}^{(1)} & \cdots & {\vb*{x}^{(1)} }^{ \T} \vb*{w}_{n}^{(1)} \\
+               \vdots                                           &           & \vdots \\
+               {\vb*{x}^{\qty(m')}}^{ \T} \vb*{w}_{1}^{(1)}  & \cdots & {\vb*{x}^{\qty(m')}}^{ \T} \vb*{w}_{n}^{(1)} ]
+$$
+となる。すなわち$U^{(1)}$は$m' \times n$の行列で、その成分は
+$$U_{ij}^{(1)} = {\vb*{x}^{(i)}}^{ \T} \vb*{w}_{j}^{(1)} , ~~~~~i = 1 , \ldots , m',~~~~~j = 1 , \ldots , n$$
+である。次に各成分に対する活性化関数の値を並べた行列$H$を計算するが、このサイズは$U^{(1)}$と同じで$m' \times n$である。$H$を$m'$個の行ベクトル${\vb*{h}^{(i)}}^{\T} = \mqty[ \varphi \qty(  {\vb*{x}^{(i)}}^{ \T} \vb*{w}_{1}^{(1)} ) , \ldots ,  \varphi \qty(  {\vb*{x}^{(i)}}^{ \T} \vb*{w}_{n}^{(1)} )],~ i = 1 , \ldots , m'$を縦に並べたものと解釈する。またパラメータ$W^{(2)}$は、クラスについての列ベクトル$\vb*{w}_{k}^{(2)} , ~ k = 0 , \ldots , K$を並べたものとすれば、行列積$U^{(2)} = H W^{(2)}$は列ベクトルである必要はない。
+$$ H = \mqty[ {\vb*{h}^{(1)}}^{\T} \\ \vdots \\ {\vb*{h}^{\qty(m ' )}}^{\T}] , ~~~~~W^{(2)}  = \mqty[\vb*{w}_{0}^{(2)} , \ldots , \vb*{w}_{K}^{(2)}]$$
+であるから、
+$$
+ U^{(2)} = H W^{(2)}= \mqty[ {{\vb*{h}}^{\qty(1)}}^\T  \\ \vdots \\  {{\vb*{h}}^{\qty(m')}}^\T] \mqty[ \vb*{w}_{0}^{(2)} , \ldots ,  \vb*{w}_{K}^{(2)}]
+ = \mqty[ {\vb*{h}^{(1)}}^{ \T} \vb*{w}_{0}^{(2)} & \cdots & {\vb*{h}^{(1)} }^{ \T} \vb*{w}_{K}^{(2)} \\
+               \vdots                                           &           & \vdots \\
+               {\vb*{h}^{\qty(m')}}^{ \T} \vb*{w}_{0}^{(2)}  & \cdots & {\vb*{h}^{\qty(m')}}^{ \T} \vb*{w}_{K}^{(2)} ]
+$$
+となる。すなわち$U^{(2)}$は$ m ' \times \qty( K + 1)$の行列で、その成分は
+$$U_{ik}^{(2)} = {\vb*{h}^{(i)}}^{ \T} \vb*{w}_{k}^{(2)} , ~~~~~i = 1 , \ldots , m',~~~~~k = 0 , \ldots , K$$
+である。$U^{(2)}$の成分を横方向に見ると、ミニバッチの各データに関する情報が並んでいて、縦方向に見ると各クラスのスコアが並んでいるような構造をしている。それを表して書き直したのが式(\ref{eq:U2})である。\\
+
+さて式(\ref{eq:U2})の行列を用いて、交差エントロピーがどのように作られるのかを思い出したい。6.2.2.3節
+「マルチヌーイ出力分布のためのソフトマックスユニット」の復習である。
+
+$i$番目のデータがクラス$k$に属する確率は、ソフトマックス関数を用いて次のように与えられるのだった。
+\begin{equation}
+p_{k}^{(i)} = \mathrm{softmax} \qty( \vb*{u}^{(i)} )_{k} = \frac{\exp( u_{k}^{(i)} )}{ \displaystyle\sum_{k=0}^{K} \exp( u_{k}^{(i)} ) }. \label{eq:probability1}
+\end{equation}
+これは規格化されているので、あえてチルダ記号はつけていない。
+記号を少し整理しておく。
+\begin{itemize}
+\item $u_{k}^{(i)}$：$i$番目のデータに対するクラス$k$の「スコア」
+\item $\vb*{u}^{(i)}$：$i$番目のデータに対する各クラスのスコアを格納したベクトル
+\item $p_{k}^{(i)}$：各クラスのスコアから推計される、$i$番目のデータがクラス$k$に属する確率
+\end{itemize}
+ちなみに式(\ref{eq:probability1})の対数をとることで、行列$U^{(2)}$の各成分$u_{k}^{(i)}$が規格化されていない対数尤度になっていることを示すことができる。
+\begin{equation}
+u_{k}^{(i)} = \log p_{k}^{(i)} + \log  \qty( \displaystyle\sum_{k=0}^{K} \exp( u_{k}^{(i)} )  ) = \log \tilde{p}_{k}^{(i)} . \label{eq:unnormalized_log_prob}
+\end{equation}
+訓練データのラベル$y^{(i)}$が$k$であるとすると、その確率は
+$$\vb{1}_{ k = y^{(i)} } = 
+\begin{cases}
+1, & k = y^{(i)}, \\
+0, & k \neq y^{(i)}
+\end{cases}$$
+と表せる。これと式(\ref{eq:probability1})の推計された確率を用いれば、交差エントロピーのコスト関数は次のように作ることができる。
+\begin{equation}
+J_{\mathrm{MLE}} = - \frac{1}{m'} \sum_{i = 1}^{m'} \sum_{k = 0}^{K} \vb{1}_{ k = y^{(i)} } \log p_{k}^{(i)}. \label{eq:cross_entropy}
+\end{equation}
+なお式(\ref{eq:unnormalized_log_prob})の規格化されていない対数尤度$u_{k}^{(i)} = \log \tilde{p}_{k}^{(i)}$をそのまま交差エントロピーに用いると、式(\ref{eq:cross_entropy})によるものとは異なる結果が得られると考えられる。なぜならば式(\ref{eq:unnormalized_log_prob})の定数に思える部分$\sum_{k=0}^{K} \exp( u_{k}^{(i)} )$は実際には訓練データ$i$とパラメータ$W^{(1)},~W^{(2)}$の関数であり、$u_{k}^{(i)} = \log \tilde{p}_{k}^{(i)}$を用いた交差エントロピーは式(\ref{eq:cross_entropy})のそれに$W^{(1)},~W^{(2)}$の関数を付け足したものになるからである。
+
+\begin{thebibliography}{9}
+ \bibitem{aurelien} Aur\'{e}lien G\'{e}ron, 長尾高弘訳．「scikkit--learnとTensorFlowによる実践機械学習」，株式会社オライリージャパン，2018年．
+ \end{thebibliography}
+\end{document}

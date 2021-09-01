@@ -1,0 +1,113 @@
+%\documentclass{jsarticle}
+%\documentclass[draft]
+%\documentclass[dvipdfmx,autodetect-engine,draft]{jsarticle}% autodetect-engine で pLaTeX / upLaTeX を自動判定
+\documentclass[dvipdfmx,autodetect-engine]{jsarticle}% autodetect-engine で pLaTeX / upLaTeX を自動判定
+\usepackage{docume}
+\input{settings.ltx}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\begin{document}
+
+\begin{flushright}
+\today
+\\慶應義塾大学理工学部物理学科\\岡崎健人
+\end{flushright}
+\begin{center}
+{\Large MLPの訓練のための誤差逆伝播の例} 
+\end{center}
+%箇条書き
+%\tableofcontents   %👈目次
+%\newpage\
+
+\setcounter{section}{6}
+%\section{確率と情報理論}
+\setcounter{subsection}{5}
+\setcounter{subsubsection}{6}
+\subsubsection{MLPの訓練のための誤差逆伝播の例}
+
+隠れ層が一つのMLPを用いてバックプロパゲーションの例を見てみる。学習にはミニバッチ勾配降下法を用いる。\textcolor{magenta}{つまり訓練集合から複数の訓練データをランダムに選んで、それらのコスト関数を用いて最小点を求める。ランダムに選ばれた訓練データの集合をミニバッチと言うのだった。}
+
+まずミニバッチを用いて作られた計画行列$X$と、各訓練データに対応したラベル$\vb*{y}$を用意する。\textcolor{magenta}{例えば手書き数字の認識を目的にするならば、訓練データ$\vb*{x}^{(i)}$は、$28\times 28~\mathrm{pixels}$の画素の黒さを並べた$28\times 28 = 784$成分のベクトルであり、$y^{(i)}$はその画像に書かれた数字（答え）を表している。ミニバッチに選ばれた訓練データを$\qty{\vb*{x}^{(1)}, \ldots, \vb*{x}^{\qty(m')}},~\vb*{y} = \qty[y^{(1)} , \ldots , y^{\qty(m')}]^\T$とすれば、この場合の計画行列は
+$$X = \mqty[ {\x^{\qty(1)}}^\T  \\ \vdots \\  {\x^{\qty(m')}}^\T] = \mqty[ x_{1}^{(1)} & \cdots & x_{784}^{(1)} \\ \vdots　&  &　\vdots  \\  x_{1}^{\qty(m')} & \cdots & x_{784}^{\qty(m')}  ]$$
+のようになる。より一般には、スカラーの基底関数を$\phi_{j} (\vb*{x}),~j=1,\ldots,k$とすれば、計画行列$X$の要素は$\qty(X)_{ij}= \phi_{j}\qty(\vb*{x}^{(i)})$である。$k$はパラメータの数に対応している。}
+
+計画行列とパラメータを並べた行列$W^{(1)}$の行列積$XW^{(1)}=U^{(1)}$を計算し、各成分についての活性化関数$\varphi$を施した行列を、隠れ層$H=\varphi\qty(XW^{(1)})$とする。教科書の例では活性化関数をReLUとしている。\textcolor{cyan}{$W^{(1)}$の行が訓練データの成分に対応していて、列が隠れ層内のノードに対応している。}\textcolor{magenta}{簡便さのためにバイアスは考えないとしているが、訓練データとパラメータのベクトルに$x_{0}^{(i)}=1,~w_{0}^{(i)} = b_i$のような第０成分を加えることで問題を解決できる。}
+
+隠れ層$H$とパラメータ$W^{(2)}$との行列積$HW^{(2)} = U^{(2)}$の\textcolor{cyan}{各成分}が、規格化されていない対数尤度である。これから交差エントロピー$J_{\mathrm{MLE}}$を計算し、これをコスト関数とする\footnote{\textcolor{cyan}{詳しくは別のPDFに書いた。}}。ただしより実用に近くするために、重さ減衰
+%$\lambda \qty( \displaystyle\sum_{i,j} \qty(W_{i,j}^{(1)})^2 + \displaystyle\sum_{i,j} \qty(W_{i,j}^{(2)})^2 )$
+を加えたもの
+$$ J = J_{\mathrm{MLE}} + \lambda \qty( \displaystyle\sum_{i,j} \qty(W_{i,j}^{(1)})^2 + \displaystyle\sum_{i,j} \qty(W_{i,j}^{(2)})^2 )$$
+を最終的なコスト関数とする。ここまでの計算の流れをダイアグラムにしたのが図\ref{MLP}（教科書の図6.11）である。交差エントロピーの計算経路を紫色で、重み減衰のそれを青色で色付けした。
+%１枚の画像
+\begin{figure}[htbp]
+\centering 
+\includegraphics[width=100mm]{MLP.png}
+\caption{隠れ層１層のMLPの訓練をするときのグラフ}
+\label{MLP}
+\end{figure}\\
+
+%\input{cross_entropy.ltx}
+
+コスト関数が最小となるようなパラメータ$W^{(1)},~W^{(2)}$の値を求めることが、ここでの目的である。ミニバッチ勾配降下法を用いるので、コスト関数
+の勾配$\grad_{W^{(1)}} J,~\grad_{W^{(2)}} J$を求める必要がある。図\ref{MLP}に青色で示した、重み減衰の勾配を求めるのは簡単で、それは$2 \lambda W^{(i)},~i=1,2$である。
+
+難しいのは、紫色で示した交差エントロピーの経路の勾配である。$G = \grad_{U^{(2)}} J_{\mathrm{MLE}}$とおく。まず$\grad_{W^{(2)}} J_{\mathrm{MLE}}$は
+\begin{eqnarray*}
+\qty(\grad_{ W^{(2)} } J_{\mathrm{MLE}} )_{ij} &=& %\grad_{ W_{ij}^{(2)} } J_{\mathrm{MLE}} =
+ \pdv{ J_{\mathrm{MLE}} }{ W_{ij}^{(2)} } 
+ = \pdv{ U_{kl}^{(2)} }{ W_{ij}^{(2)} } \underbrace{\pdv{ J_{\mathrm{MLE}} }{ U_{kl}^{(2)} }}_{ G_{kl} } 
+ = \pdv{ \qty( H_{km} W_{ml}^{(2)} ) }{ W_{ij}^{(2)} } G_{kl} \\
+ &=&  H_{km}\underbrace{ \pdv{  W_{ml}^{(2)}  }{ W_{ij}^{(2)} } }_{ \delta_{mi} \delta_{lj} } G_{kl}
+ = H_{ki} G_{kj}
+ = \qty(H^\T)_{ik} G_{kj}
+ =\qty( H^\T G)_{ij}
+\end{eqnarray*}
+という計算により$\grad_{ W^{(2)} } J_{\mathrm{MLE}} = H^\T G $とわかる。ただし式変形にはアインシュタインの縮約を用いた。次に$\grad_{W^{(1)}} J_{\mathrm{MLE}}$について考える。$G' = \grad_{ U^{(1)} } J_{\mathrm{MLE}}$とすれば、
+\begin{eqnarray*}
+\qty( \grad_{ W^{(1)} } J_{\mathrm{MLE}} )_{ij}
+&=& \pdv{ J_{\mathrm{MLE}} }{ W_{ij}^{(1)} } 
+  = \pdv{ U_{kl}^{(1)} }{ W_{ij}^{(1)} } \underbrace{\pdv{ J_{\mathrm{MLE}} }{ U_{kl}^{(1)} }}_{ G'_{kl} }
+  = \pdv{ \qty( X_{km} W_{ml}^{(1)} ) }{ W_{ij}^{(1)} } G'_{kl} \\
+  &=& X_{km} \underbrace{ \pdv{ W_{ml}^{(1)} }{ W_{ij}^{(1)} } }_{ \delta_{mi} \delta_{lj} } G'_{kl} 
+  = X_{ki} G'_{kj}
+  =\qty(X^{\T})_{ik} G'_{kj}
+  = \qty( X^{\T} G' )_{ij}
+\end{eqnarray*}
+より$\grad_{ W^{(1)} } J_{\mathrm{MLE}} =  X^{\T} G' $とわかる。\textcolor{cyan}{なお$G'$の$ij$成分を計算すると、$\grad_{H} J_{\mathrm{MLE}} = G {W^{(2)}}^\T$であることは上と同様の計算によってわかるので
+\begin{eqnarray*}
+G'_{ij} &=& \pdv{ J_{\mathrm{MLE}} }{ U_{ij}^{(1)} } 
+ = \pdv{ H_{kl} }{ U_{ij}^{(1)} } \underbrace{\pdv{ J_{\mathrm{MLE}} }{ H_{kl} } }_{\qty(G {W^{(2)}}^{\T})_{kl} }
+ = \underbrace{\pdv{ \varphi  \qty( U_{kl}^{(1)} ) }{ U_{ij}^{(1)} }}_{\delta_{ki} \delta_{lj} \varphi ' \qty( U_{kl}^{(1)} )} \qty(G {W^{(2)}}^{\T})_{kl} \\
+  &=&  \varphi ' \qty( U_{ij}^{(1)} ) \qty(G {W^{(2)}}^{\T})_{ij} 
+  = \qty[ \varphi ' \qty( U^{(1)} ) \odot \qty(G {W^{(2)}}^{\T}) ]_{ij}
+\end{eqnarray*}
+より$G' = \varphi ' \qty( U^{(1)} ) \odot \qty(G {W^{(2)}}^{\T})$とわかる。活性化関数がReLUの場合は$\varphi ' (x) = \theta (x)$であるから、$G' = \theta \qty( U^{(1)} ) \odot \qty(G {W^{(2)}}^{\T})$となる。ただし$\theta(x)$はヘヴィサイドの階段関数で、正の引数に対して$1$を、負の引数に対して$0$を返す。引数がゼロに等しいときは定義されていない。
+}
+
+まとめると、コスト関数の勾配は
+\begin{eqnarray*}
+ \grad_{ W^{(1)} } J &=& X^{\T} G' + 2 \lambda W^{(1)} , \\
+ \grad_{ W^{(2)} } J &=& H^{\T} G + 2 \lambda W^{(2)}
+\end{eqnarray*}
+となる。あとはこの勾配を用いて最小点を求めればよい。\\
+
+MLPの計算コストにおいて支配的になるのは、行列積の計算コストである。重みの行列の数を$w$とすれば、順伝播、逆伝播ともに$O(w)$くらいの積和演算が必要になる。
+\textcolor{magenta}{上の例では、順伝播（訓練データからコスト関数を計算する向き）では重み行列との行列積を２回、逆伝播（コスト関数から勾配を計算する向き）でも$\grad_{ W^{(1)} } J  ,~ \grad_{ W^{(2)} } J$を計算するのにそれぞれ１回ずつ、全体で２回の行列積を計算している。}
+
+また$m ' $をミニバッチ内の訓練事例の数、$n_{h}$を隠れ層のユニット数とすれば、メモリのコストは$O ( m ' n_{h} )$となる。
+
+\subsubsection{複雑さの要因}
+実際の実装では、上のシンプルな例よりも複雑になる。
+
+まず我々が定義した演算（{\tt op.bprop}など）は１つのテンソルを返す関数であったが、ソフトウェアの実装ではより多くのテンソルを返す関数が必要になる。
+
+メモリの消費についてはあまり言及していなかった。バックプロパゲーションでは多くのテンソルの足し算の演算がよく行われる。第１段階でそれぞれの項を計算し、第２段階でそれらの総和を計算する、という素朴なやり方がある。しかしそれではメモリを過度に消費してボトルネックになり、全体の処理性能を低下させてしまう。このことは１つのバッファ（緩衝装置）を用意してやり、それぞれの項を計算しながらこれに足してゆくことで、回避できる。
+
+実際のバックプロパゲーションの実装では、単精度、倍精度、整数型などの様々な数値表現を取り扱う必要がある。これらの数値表現をどう扱うかという方針については、注意して設計する。
+
+勾配が定義できないような演算（例えばReLUのゼロにおける勾配は未定義）があるので、そのような場合を追跡し、未定義なのかどうかを判断することが大事である。
+
+現実では、専門的な事柄によって微分が複雑になるが、乗り越えられないわけではない。この章ではキーとなる手法を紹介したが、もっと多くの微妙な点があることを頭の片隅に入れておくことが重要である。
+
+
+
+\end{document}

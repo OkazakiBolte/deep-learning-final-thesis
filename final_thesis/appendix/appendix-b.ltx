@@ -1,0 +1,161 @@
+\documentclass[a4paper,11pt,oneside,openany,uplatex]{jsbook}
+\input{/Users/bolte/Desktop/my_palace/programming/深層学習/卒業論文/settings.ltx}
+\begin{document}
+
+
+\chapter{実装に用いたソースコード } \label{chap : source}
+
+
+ \section{動作環境}
+   実装は以下の環境のもとで行った。なおKerasはTensorFlowに付属のものを用いた。
+  \begin{itemize}
+     \item CPU：2.4 GHz クアッドコアIntel Core i5
+     \item メモリ：16 GB 2133 MHz LPDDR3
+     \item GPU：Intel Iris Plus Graphics 655 1536 MB
+          \item OS：macOS Catalina 10.15.2
+     \item Python：3.6.6
+     \item TensorFlow：1.11.0
+     \item Keras on TensorFlow：2.1.6
+  \end{itemize}
+
+\section{$1$隠れ層のフィードフォーワード・ニューラルネットワークのソースコード }
+\begin{lstlisting}[caption=$1$隠れ層のニューラルネットワーク, label=source : simple-fnn]
+import tensorflow as tf
+
+# (1) データのインポート
+from tensorflow.keras.datasets import mnist
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+
+# (2)データの変形
+import numpy as np
+from tensorflow.python.keras.utils import np_utils
+# (2-1)
+x_train = x_train.reshape(60000, 784)       # (2-1-1)
+x_train = x_train.astype('float32')         # (2-1-2)
+x_train = x_train / 255                     # (2-1-3)
+num_classes = 10                            # (2-1-4)
+y_train = np_utils.to_categorical(y_train, num_classes) # (2-1-5)
+# (2-2)
+x_test = x_test.reshape(10000, 784)
+x_test = x_test.astype('float32')
+x_test = x_test / 255
+y_test = np_utils.to_categorical(y_test, num_classes)
+
+# (3) ネットワークの定義
+np.random.seed(1)                                        # (3-1)
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Activation
+model = Sequential()                                     # (3-2)
+model.add(Dense(100, input_dim=784, activation='relu'))  # (3-3)
+model.add(Dense(10, activation='softmax'))               # (3-4)
+model.compile(loss='categorical_crossentropy',
+              optimizer='sgd', metrics=['accuracy'])     # (3-5)
+
+# (4) 学習
+num_epochs = 100
+batchsize = 1000             # (4-1)
+
+import time                  # (4-2)
+startTime = time.time()      # (4-3)
+history = model.fit(x_train, y_train, epochs=num_epochs, batch_size=batchsize,
+                    verbose=1, validation_data=(x_test, y_test))        # (4-4)
+score = model.evaluate(x_test, y_test, verbose=0, batch_size=batchsize) # (4-5)
+
+# (5) 計算結果の表示
+print('Test loss:', score[0])
+print('Test accuracy:', score[1])
+print("Computation time:{0:.3f} sec".format(time.time() - startTime))
+print(model.summary())
+ \end{lstlisting}
+
+まず\ty{(1)}でMNISTデータセットのデータをインポートしている。\ty{x_train}は$60000 \times 28 \times 28$の配列変数で、それぞれの要素には画像のグレースケールを表す$0$から$255$までの整数値で格納されている。\ty{y_train}はサイズが$60000$の１次元配列で、それぞれの要素には$0$から$9$まで正解のラベルが格納される。同様に$10000$個のテストデータが\ty{(x_test, y_test)}に格納される。
+
+\ty{(2)}でデータの配列を変形した。まずPythonの拡張モジュールNumPyとnp\_utilsをインポートしておいた。\ty{(2-1-1)}で$60000 \times 28 \times 28$の配列を$60000 \times 784$の配列に変換した。\ty{x_train}をint型（整数）からfloat型（$32$ビットの不動少数点数）に変換し\ty{(2-1-2)}、$0$から$1$までの実数に変換した\ty{(2-1-3)}。分類するクラスの数を\ty{num_classes = 10}として\ty{(2-1-4)}、\ty{y_train}をワンホットベクトルに変換した\ty{(2-1-5)}。同じ処理をテストデータについても行った\ty{(2-2)}。
+
+\ty{(3)}でニューラルネットワークの定義をした。まずNumPyによる乱数を固定するために、seed値を固定した\ty{(3-1)}。これをすることで再現性のある分析や処理を行うことができる。\ty{model}を\ty{Sequential()}で定義した\ty{(3-2)}。パーセプトロンが信号を次のパーセプトロンにつないでゆき、これをつなげていくというモデルがSequentialである。隠れ層のユニット数を$100,~$活性化関数にはReLUを使うことをで指定した\ty{(3-3)}。出力層のユニット数が$10$で、活性化関数にソフトマックス関数を使うことを\ty{(3-4)}で指定した。最後にコスト関数には交差エントロピーを、最適化アルゴリズムには確率的勾配法（SGD）を採用した\ty{(3-5)}。また\ty{metrics=['accuracy']}とすることで、テストデータでネットワークの性能を測る際の汎化性能を、テストデータにおける正解率（accuracy）でみた。
+
+\ty{(4)}でニューラルネットワーク\cyan{に学習をさせ、その結果を計算させた}。エポック数を$100,~$ミニバッチに用いる訓練データの数を$1000$にし、あとで調節できるようにそれぞれ\ty{num_epochs}と\ty{batchsize}という変数に格納しておいた\ty{(4-1)}。プログラムの実行時間を計測するために、timeモジュールをインポートしておき\ty{(4-2)}、実行開始時刻を\ty{startTime}とした\ty{(4-3)}。エポックごとの学習の評価値を表示させるために\ty{verbose=1}とし、学習を行った\ty{(4-4)}。最後にテストデータでのコスト関数と汎化誤差（ここでは正解率）を計算させた\ty{(4-5)}。\ty{score}は$2$成分からなる配列で、第$0$成分にテストデータでのコスト関数、第$1$成分に正解率が格納される。
+
+\ty{(5)}で学習結果を表示させた。テストデータでのコスト関数を\ty{Test loss}、正解率を\ty{Test accuracy}、実行時間を\ty{Computation time}で表示させた。
+\ty{print(mode.summary())}でモデルの層に対するパラメータの数を表示させた。
+
+ また節\ref{subsec : コスト関数の比較}では、Pythonの\ty{for}文を用いソースコード\ref{source : simple-fnn}の\ty{(3-3)}から\ty{(3-5)}の部分をソースコード\ref{source : simple-fnn-3-3}のように変更した。
+
+\begin{lstlisting}[caption=隠れ層を増やすために加えた変更, label=source : simple-fnn-3-3]
+num_hidden_layers = 2
+a = 8
+num_first_hidden_units = num_classes * a ** num_hidden_layers
+model.add(Dense(num_first_hidden_units, input_dim=784, activation='relu'))
+for k in range(2, num_hidden_layers + 1):
+    num_hidden_units = num_classes * a ** (num_hidden_layers + 1 - k)
+    model.add(Dense(num_hidden_units, activation='relu'))
+model.add(Dense(num_classes, activation='softmax'))
+model.compile(loss='categorical_crossentropy',
+              optimizer='sgd', metrics=['accuracy'])
+ \end{lstlisting}
+
+\section{$1$隠れ層の畳み込みニューラルネットワークのソースコード}
+
+ \begin{lstlisting}[caption=$1$隠れ層の畳み込みニューラルネットワーク, label=source : simple-cnn]
+import tensorflow as tf
+
+# (1) データのインポート
+from tensorflow.keras.datasets import mnist
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+
+# (2) データの変形
+import numpy as np
+from tensorflow.python.keras.utils import np_utils
+# (2-1)
+x_train = x_train.reshape(60000, 28, 28, 1) # (2-1-1)
+x_train = x_train.astype('float32')
+x_train /= 255
+num_classes = 10
+y_train = np_utils.to_categorical(y_train, num_classes)
+# (2-2)
+x_test = x_test.reshape(10000, 28, 28, 1)
+x_test = x_test.astype('float32')
+x_test /= 255
+y_test = np_utils.to_categorical(y_test, num_classes)
+
+# (3) ネットワークの定義
+np.random.seed(1)
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D
+from tensorflow.keras.layers import Activation, Flatten, Dense, Dropout
+import time
+
+model = Sequential()
+model.add(Conv2D(1, (3, 3), # (3-1)
+                  padding='same', # (3-2)
+                  input_shape=(28, 28, 1), activation='relu'))
+model.add(Flatten()) # (3-3)
+model.add(Dense(10, activation='softmax'))
+model.compile(loss='categorical_crossentropy',
+              optimizer='sgd', metrics=['accuracy'])
+
+# (4) 学習
+startTime = time.time()
+
+num_epochs = 20
+batchsize = 1000
+history = model.fit(x_train, y_train, batch_size=batchsize, epochs=num_epochs,
+                    verbose=1, validation_data=(x_test, y_test))
+score = model.evaluate(x_test, y_test, verbose=0)
+
+# (5) 計算結果の表示
+print('Test loss:', score[0])
+print('Test accuracy:', score[1])
+print("Computation time:{0:.3f} sec".format(time.time() - startTime))
+print(model.summary())
+ \end{lstlisting}
+
+フィードフォーワード・ニューラルネットワークの学習のときと同様、\ty{(1)}でMNISTデータセットのデータをインポートし、\ty{(2)}でデータの配列を変形した。ただし画像のデータをベクトルに展開せず、\ty{(2-1-1)}で$60000 \times 28 \times 28 \times 1$のまま使用した点が異なる。テストデータも同様に処理した\ty{(2-2)}。
+
+\ty{(3)}でニューラルネットワークの定義をした。\ty{model}は\ty{Sequential()}とした。$1$枚の$3 \times 3$のフィルターを学習するパラメータとし\ty{(3-1)}、出力のサイズが変わらないようにパディングを追加した\ty{(3-2)}。活性化関数はReLUとした。この層の出力サイズは$28 \times 28 \times 1$だが、出力層に入力するのにこれを$784$のベクトルに変形した\ty{(3-3)}。出力層の活性化関数はソフトマックス関数、コスト関数は交差エントロピー、最適化アルゴリズムは確率的勾配降下法（SGD）、汎化性能を正解率とした。
+
+あとはフィードフォーワード・ネットワークの実装と同様、\ty{(4)}で学習、\ty{(5)}で学習の結果を表示させた。
+
+
+
+\end{document}

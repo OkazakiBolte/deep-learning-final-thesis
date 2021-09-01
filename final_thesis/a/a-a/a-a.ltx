@@ -1,0 +1,247 @@
+\documentclass[a4paper,11pt,oneside,openany,uplatex]{jsbook}
+\input{/Users/bolte/Desktop/my_palace/programming/深層学習/卒業論文/settings.ltx}
+\graphicspath{{/Users/bolte/Desktop/my_palace/programming/深層学習/卒業論文/fig/}}
+
+\begin{document}
+\chapter{数学的準備}
+ここでは本稿の目的である、手書き数字の認識を行うニューラルネットワークの構築に必要な数学的事項を説明する。大まかに分けて線形代数、確率論、情報理論の知識が必要になる。
+%ここでは使用する機械学習ライブラリ「TensorFlow」の対応言語のひとつであるPythonの記法もあわせて載せておく。
+
+\section{線形代数}
+\cyan{機械学習ではデータを配列として取り扱うため、線形代数の知識が必要不可欠である。ここでは他クラス分類のために必要になる事項のみを記しておく。\\}
+
+
+%\subsection{スカラー、ベクトル、行列、テンソルとそれらの記法}
+%スカラー（scalar）は$ -1.4 , ~ 1 , ~ \pi$などの単一の数のことをいう。%本稿の数式上では$ a , b , c , \ldots$のようにアルファベットのイタリック体で書き表すことにする。%これは$ 1 \times 1$の行列とみなすことができる。
+%スカラーを１次元状に並べたものをベクトル（vector）という。%本稿ではベクトルを$\vb*{x}$のように、ボールドイタリック体の小文字のアルファベットで表す。ベクトルの成分は$x_{1},~y_{i}$のようにスカラーに要素番号を添えることで表す。
+%２次元の数の配列を行列（matrix, pl. matrices）という。%本稿では、行列そのものは$A$などのイタリック体の大文字で表し、その成分$A_{i  j}$のように２つの添字を付すことでを表すことにする。
+%３次元以上の数の配列をテンソル（tensor）といい、本稿では$\vb{A}$のようにボールドのローマン体を使った大文字で表記する。テンソル$\vb{A}$の$(i , j , k)$成分は$A_{i  j  k}$のように３つ以上の添字を付して表す。\\%$\vb*{A} \vb{A}$
+単一の数を格納したものを\daiji{スカラー}（scalar）という。スカラーをそれぞれ１次元状、２次元状、３次元以上の状態に配列したものを、それぞれ\daiji{ベクトル}（vector）、\daiji{行列}（matrix）、\daiji{テンソル}（tensor）という。\\%\\
+
+本稿の数式においては、スカラー、ベクトル、行列、テンソルを表す文字の表記を次のように統一する。
+\begin{itemize}
+  \item スカラー：$  x , y , w , i , j $のようにアルファベットのイタリック体で書き表すことにする。
+  \item ベクトル：$\vb*{x}$のように、ボールドイタリック体の小文字のアルファベットで表す。ベクトルの成分は$x_{i}$のようにスカラーに要素番号を添えることで表す。
+  \item 行列：行列そのものは$A$などのイタリック体の大文字で表し、その成分は
+  $A_{i  j}$のように２つの添字を付すことでを表す。
+  \item テンソル：$\vb{A}$のようにボールドのローマン体を使った大文字で表記する。その成分は$A_{i  j  k}$のように３つ以上の添字を付して表す。
+\end{itemize}
+
+テンソルは行列、ベクトル、スカラーをより一般化したものである。そのため本稿ではスカラーやベクトルなどの量を、一般性を失わないためにあえてテンソルとして表現することがある。\\
+
+%\subsection{積の計算}
+行列$A$について、その成分$A_{i  j}$と$A_{ j  i}$を入れ替えた行列を\daiji{転置行列}（transposed matrix）または単に\daiji{転置}（transpose）といい、$A^{\T}$と表記する。すなわち$A_{ij} = \qty(A^{\T})_{ji}.~$ベクトルは１つの列ベクトルからなる行列とみなせば、ベクトルの転置は行ベクトルである。転置の例を次に示す。
+\begin{eqnarray*}
+ A = \mqty[ A_{11} & A_{12} \\ A_{21} & A_{22} \\ A_{31} & A_{32}] ~~~&\longrightarrow&~~~ A^{\top} = \mqty[ A_{11} & A_{21} & A_{31} \\ A_{12} & A_{22} & A_{32}] , \\
+ \vb*{x} = \mqty[ x_{1} \\ x_{2} \\ \vdots \\  x_{n} ] ~~~&\longrightarrow&~~~ \vb*{x}^{\T} = \mqty[ x_{1} , x_{2} , \ldots , x_{n} ] .
+ \end{eqnarray*}
+スカラー$a$については、それを$1 \times 1$の行列とみなせば転置をとっても変わらない。すなわち$a^{\T} = a$である。\\
+
+$m \times n$の行列$A$と$ n \times p$の行列$B$に対して、行列積（matrix product）$C = A B$が次のように定義できる。
+\begin{equation}
+C_{ij} = \sum_{k} A_{ik} B_{kj}. \label{eq : matrix_product}
+\end{equation}
+この行列$C$のサイズは$m \times p$になる。\\
+
+２つの同じサイズのベクトル$\vb*{x} = \qty[ x_{1} , \ldots , x_{n}]^{\T}$と$\vb*{y} = \qty[ y_{1} , \ldots , y_{n}]^{\T}$について、\daiji{ドット積}（dot product）は行列積
+$\vb*{x}^{\T} \vb*{y}$となり、これはスカラーである。
+\begin{equation}
+\vb*{x}^{\T} \vb*{y} = \mqty[ x_{1} , \ldots , x_{n}] \mqty[ y_{1} \\ \vdots \\ y_{n}] = x_{1} y_{1} + \cdots + x_{n} y_{n} = \sum_{k = 1}^{n} x_{k} y_{k}. \label{eq : dot_product}
+\end{equation}
+$\vb*{x}^{\T} \vb*{y}$はスカラーであるから、$\qty( \vb*{x}^{\T} \vb*{y} )^{\T} = \vb*{x}^{\T} \vb*{y}$である。また式(\ref{eq : dot_product})から分かるように、$\vb*{x}^{\T} \vb*{y} = \vb*{y}^{\T} \vb*{x}$である。ゆえに$ \vb*{x}^{\T} \vb*{y} = \qty( \vb*{x}^{\T} \vb*{y} )^{\T} = \vb*{y}^{\T} \vb*{x}$である。\\
+
+行列の\daiji{アダマール積}（Hadamard product）を計算することがある。同じサイズの行列$A$と$B$について、そのアダマール積$A \odot B$は、それぞれの行列の成分ごとの積を計算した行列である。すなわち$\qty(A \odot B)_{ij} = A_{ij}  B_{ij}$である。この定義はより一般のテンソルにも拡張できる。\\
+
+数式の見た目をシンプルにするために、\daiji{アインシュタインの縮約記法}（Einstein summation convention）を本稿で使うことがある。テンソルの成分についての計算時に、同じ項の中で同じ添字が現れた場合は、総和の記号$\sum$を省略して書く。この記法を用いれば、式(\ref{eq : matrix_product})は$C_{ij} = A_{ik} B_{kj},~$式(\ref{eq : dot_product})は$\vb*{x}^{\T} \vb*{y} = x_{k} y_{k}$と書ける。アインシュタインの縮約記法を用いるときは必ずその旨を表すようにする。\\
+
+%\subsection{行列の微分}
+%行列$A$に対して、その$A_{ij}$の成分を偏微分演算子$\pdv*{A_{ij}}$に置き換えた行列を$\grad_{A}$と書く。これは演算子であるから、$f$を何かしらの関数として、$f$に左から作用させて初めて実体を持つ。%関数に左から作用させたときに実体を持つ。
+関数$f$と行列$A$について、任意の成分$A_{ij}$を$\pdv*{f}{A_{ij}}$に置き換えた行列を$\grad_{A} f$と書く。
+$$ \qty( \grad_{A} f )_{ij} = \pdv{f}{A_{ij}} . $$
+これは一般のテンソルにも拡張できる。$\grad_{\vb{A}} f$のサイズはテンソル$\vb{A}$のそれと同じである。\\
+
+
+
+
+
+
+
+
+
+
+
+%\begin{comment}
+%\subsection{ノルム}
+ベクトル$\vb*{x} = \qty[ x_{1} , \ldots , x_{n}]^{\T}$の$L^{p}$ノルム（$L^{p}$ norm）を
+\begin{equation*}
+\norm{ \vb*{x} }_{p} = \qty( \sum_{ i = 1}^{n} \abs{x_{i}}^{p} )^{\frac{1}{p}}
+\end{equation*}
+と定義する。
+
+$L^{2}$ノルムは数学的に扱いやすく、よく用いられるため、\daiji{ユークリッドノルム}（Euclidean norm）ともよばれる。特に$L^{2}$ノルムの$2$乗は、そのベクトル自身とのドット積に一致する。
+$$ \norm{ \vb*{x} }_{2}^{2} = x_{1}^{2} + \cdots + x_{n}^{2} = \vb*{x}^{\T} \vb*{x}.$$
+%\end{comment}
+
+
+
+
+
+
+
+
+
+
+
+
+\section{確率論}
+%\subsection{確率論を使うことの意義}
+コンピュータ科学ではほとんどの場合、完全に決定論的で確実な対象を扱うが、機械学習では不確実・非決定論的な量を扱わなければならない。不確実性を生み出す要因は３つある。１つめは扱う対象そのものが確率性を持つ場合（例：量子力学や完璧にシャッフルされたカードなど）、２つめは扱う対象の振る舞いを決める変数を観測できない・しない場合（例：\cyan{くじ引きをするときに結果が当たりかハズレかは決定論的に決まっているが、くじ引きをする者にとって結果は不確実である}）、最後は観測した情報を破棄した場合（例：物体の位置を離散化したとき、正確な位置は不確実となる）である。
+
+確実だが複雑な規則よりも、不確実だが単純な規則を用いるほうが実用的であるため、確率論が用いられる。
+
+\daiji{頻度確率}（frequentist probability）とは、反復可能な試行を無限回くりかえしたときに、ある事象が現れる頻度という意味での確率のことである。いっぽう反復可能な試行でなくとも、信念の度合い（degree of belief）、可能性の大きさという意味での確率を\daiji{ベイズ確率}（Bayesian probability）という。確率論ではこれら２つの意味での確率を同等に扱う。
+
+確率論はある命題のもっともらしさが与えられたときに、対象の命題が真であるもっともらしさを決定するための、不確実性を扱うための論理学の拡張とみなすことができる。\\
+
+%\subsection{確率変数と確率分布}
+\daiji{確率変数}（random variable）とは起こりうる事象に対応した、ランダムな値を取れる変数のことである。確率変数を$\mathrm{x}$のようにローマン体の小文字で書き%\footnote{多くの本では$X$のようにイタリック体の大文字で書かれることが多いようです。}
+、$\mathrm{x}$がとりうる値は$x$のようにイタリック体で書く。確率変数がベクトル値のときはそれらは太字で$\vb{x},~\vb*{x}$のように書く。確率変数は離散値でも連続値でもよい。
+たとえばサイコロを振ったときの「$6$の目が出る」という事象は$\mathrm{x}=6$に対応させる、コイントスをしたときの「裏が出る」「表が出る」という事象をそれぞれ$\mathrm{x}=0,~\mathrm{x}=1$に対応させる。このように確率変数は、事象の集合（標本空間）から数の集合への関数と考えることもできる。\\
+
+\daiji{確率質量関数}（probability mass function, PMF）とは、離散型確率変数に対してその値をとるときの確率を対応させた関数のことであり、大文字$P$で書き表す。\\
+
+
+
+\begin{comment}
+たとえば確率$p$で表（$\mathrm{x}=1$）、確率$1-p$で裏（$\mathrm{x}=0$）が出るようなコインでコイントスをするとき、確率質量関数は
+$$P(\mathrm{x}=x)=
+\left\{
+  \begin{array}{cl}
+  p, & (x=1) \\
+  1-p & (x=0)
+  \end{array}
+ \right.$$
+ とかける（これはベルヌーイ分布とよばれる）。このコイントスを$n$回行ったうち$k$回だけ表が出る確率は
+ $$P(\mathrm{y}=k)=\mqty(n \\ k) p^k \qty(1-p)^{n-k} = \frac{n !}{k ! \qty(n - k) !}p^k \qty(1-p)^{n-k}$$
+ となる（これは二項分布とよばれる）。このとき「確率変数$\mathrm{y}$は母数$(n,p)$の二項分布$\mathrm{B}(n,p)$に従う」といい、これを$\mathrm{y} \sim \mathrm{B}(n,p)$と表記する。
+ \end{comment}
+
+ $\mathrm{x}=x$かつ $\mathrm{y}=y$であるときの確率$P(\mathrm{x}=x,\mathrm{y}=y)=P(x,y)$は\daiji{同時確率分布}（joint probability distribution）とよばる。
+
+ 関数$P$が離散型確率変数$\mathrm{x}$の確率質量関数であるためには以下の性質を満たさなければならない。
+ \begin{itemize}
+  \item 定義域は確率変数のとりうる値すべての集合である。
+  \item その集合を$A$とすると、$\forall x \in A$に対して $ 0\le P(x) \le 1. $
+  \item \daiji{正規化されている}（normalized）：$\sum_{\forall x \in A} P(x)=1.$
+ \end{itemize}
+
+ %たとえば、確率変数$\mathrm{x}$が$k$個の異なる離散値$x_1, x_2, \ldots, x_k$をとるとき、確率質量関数を$$P(\mathrm{x}=x_i)=\frac{1}{k}$$とすれば一様分布を定義することできる。すべての$i$で和をとれば$$\sum_{i=1}^{k} P(\mathrm{x}=x_i) =\frac{1}{k}\sum_{i=1}^{k}1=\frac{1}{k}\cdot k =1$$となって、正規化されていることがわかる。\\
+
+ 離散型確率変数に対して確率質量関数とよんでいたものを、連続型確率変数に対しては\daiji{確率密度関数}（probability density function, PDF）とよぶ。確率密度関数$p$は以下の性質を満たさなければならない。
+ \begin{itemize}
+  \item 定義域は確率変数のとりうる値すべての集合である。
+  \item その集合を$I$とすると、$\forall x \in I$に対して$0 \le p(x).~$ただし$p(x) \le 1$である必要はない。
+  \item $\int_I p(x) \dd{x}=1.$
+ \end{itemize}
+
+ $\mathrm{x}=x$であるときの確率は$p(x)$と直接得られるわけではなく、代わりに $\mathrm{x}$が微小区間$\qty[x,x+\delta x]$の値をとるときの確率が$p(x) \delta x$で与えられる。区間$\qty[a,b]$に$x$が存在する確率は$\int_{\qty[a,b]} p(x) \dd{x}$で求められる。\\
+
+
+
+
+ \begin{comment}
+ 確率密度関数の例として、一様分布がある。
+ $$u(x;a,b)=
+ \left\{
+ \begin{array}{ll}
+\displaystyle\frac{1}{b-a}, & x \in \qty[a,b], \\
+ 0, & x \notin \qty[a,b].
+ \end{array}
+ \right.$$
+ 積分すれば$1$になる。$x$が区間$\qty[a,b]$において一様分布にしたがうことを、$\mathrm{x} \sim U(a,b)$と表す。
+ \end{comment}
+
+
+
+
+
+ %\subsection{条件付き確率と確率の連鎖律}
+ ある事象が起こったもとでの別の事象が起こる確率を\daiji{条件付き確率}（conditional probability）という。$\mathrm{x} = x$が与えられたもとでの$\mathrm{y} = y$が起こる条件付き確率$P( \mathrm{y} = y \mid \mathrm{x} = x ) = P( y \mid x )$は
+ \begin{equation}
+  P ( y \mid x ) = \frac{ P ( y , x ) }{ P ( x ) }  \label{eq : conditional_probability}
+ \end{equation}
+ と定義される。\\
+
+ 多数の確率変数$\mathrm{x}_{1} , \ldots , \mathrm{x}_{n}$に対する同時確率分布は式(\ref{eq : conditional_probability})を用いれば、１つの確率変数についての条件付き確率に分解してそれらの積として表現できる。このことを\daiji{確率の連鎖律}（chain rule of probability）という。
+ $$ P \qty( \mathrm{x}_{1} , \ldots , \mathrm{x}_{n} ) = P(\mathrm{x}_{1}) \prod_{i = 2}^{n} P\qty( \mathrm{x}_{i} \mid \mathrm{x}_{1} , \ldots , \mathrm{x}_{i - 1}) . $$\\
+
+ %\subsection{ベイズの定理}
+ 確率変数$\mathrm{a}$と$\mathrm{b}$について、条件付き確率$P( \mathrm{b} = b \mid \mathrm{a} = a  )$を知っているときに、別の条件付き確率$P( \mathrm{a} = a \mid \mathrm{b} = b )$を求めたい状況はよくある。確率分布$P( \mathrm{a} = a )$が分かっていれば、これは次のように計算できる。
+ \begin{equation}
+  P( a \mid b ) = \frac{  P( b \mid a) P(a) }{ P(b) } = \frac{ P( b \mid a) P(a) }{ \sum_{a} P(a) P( b \mid a) }. \label{eq : bayes_theorem}
+ \end{equation}
+ これを\daiji{ベイズの定理}（Bayes' theorem）という。\\
+
+%\subsection{期待値と分散}
+ 確率変数$\mathrm{x}$が確率分布$P$に従うとき、関数$\phi (x)$の平均を\daiji{期待値}（expectation）といい、記号$ \mathbb{E}_{x \sim P} \qty[ \phi (x) ] $と表す。離散型確率変数についての期待値の定義は
+ $$  \mathbb{E}_{x \sim P} \qty[  \phi  (x) ] = \sum_{x} P(x)  \phi (x) $$
+ であり、連続型確率変数の期待値は積分を用いて
+ $$ \mathbb{E}_{x \sim p} \qty[  \phi  (x) ] = \int p(x)  \phi (x) \dd{x}$$
+ と定義される。\\
+
+
+
+
+
+ \begin{comment}
+ また関数$f(x)$のばらつき度合いを表すのに分散（variance）が用いられる。
+ $$ \mathrm{Var} \qty[ f(x) ] = \mathbb{E} \qty[ \qty( f(x) - \mathbb{E}\qty[ f(x) ] )^{2} ] = \mathbb{E} \qty[ \qty( f(x) )^{2} ] - \qty( \mathbb{E} \qty[ f(x) ] )^{2} .$$
+ \end{comment}
+
+
+
+
+
+
+\section{情報理論}
+\cyan{情報を量的に取り扱うために、機械学習では情報理論の知識も重要である。この節では自己情報量から交差エントロピーまでの説明を簡単に行う。\\}
+
+%%\subsection{自己情報量とシャノン・エントロピー}
+「地球は自転している」という情報よりも「明日地球に隕石が衝突する」という情報の方が意外性が強く、より大きな価値をもつ気がする。このような直感的な「情報の価値」のようなものを数学的に表現したい。具体的には
+\begin{itemize}
+ \item 起こりやすい事象の情報量は少なく、特に確実に起こる事象の情報量はないとする
+ \item 起こるのが珍しい事象ほど情報量は大きい
+ \item 独立な事象については情報量は足し算で表される。例えば「コイントスを２回行ったところ表が２回出た」という事象の情報は、「コイントスを１回行ったところ表が出た」という事象のそれよりも、２倍の大きさをもつ
+\end{itemize}
+というようなものを数式で表現したい。この３つの性質を満たすためには次のような量を作ればよい。
+$$I(x)=-\log P(x).$$
+これを事象$\mathrm{x}=x$の\daiji{自己情報量}（self-information）という。
+本稿では$\log$は常に自然対数を表すものとし、その場合の自己情報量の単位は\daiji{ナット}（nats）という。
+
+自己情報量は１つの事象のみについての情報量であるが、全体の情報量の平均を\daiji{シャノン・エントロピー}（Shannon entropy）という。
+$$H(\mathrm{x})=H(P)=\mathbb{E}_{\mathrm{x}\sim P} \qty[I(x)]=-\sum_{i} P(x_i) \log P(x_i).$$
+たとえば確率$p$で表が出るコインでコイントスをするときのシャノン・エントロピーは$H(P)=-p\log p - \qty(1-p) \log \qty(1-p)$となる。この関数を図示すると図\ref{fig : shannon-entropy}のようになり、$p=0,1$（結果が確実にわかっている）ときに$H(P)=0,~p=1/2$（結果は不確実）のときに最大値を取ることがわかる。一般に離散型確率変数に対する確率分布のシャノン・エントロピーが最大になるのは一様分布のときである。\\
+%１枚の画像
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=100mm]{fig-shannon-entropy.png}
+\caption{二値確率変数のシャノン・エントロピー}
+\label{fig : shannon-entropy}
+\end{figure}
+
+%%\subsection{KLダイバージェンスと交差エントロピー}
+同じ確率変数$\mathrm{x}$に対して異なる確率分布$P(\mathrm{x})$と$Q(\mathrm{x})$があったとき、それらがどれほど異なるのかを表す量として\daiji{KLダイバージェンス}（Kullback--Leibler divergence）がある。
+$$D_{\mathrm{KL}}\qty(P \| Q)=\mathbb{E}_{\mathrm{x}\sim P} \qty[\log \frac{P(x)}{Q(x)}]=\sum_{i} P(x_i) \log \frac{P(x_i)}{Q(x_i)}.$$
+$D_{\mathrm{KL}}\qty(P \| Q) \ge 0$であり、等号成立は$P$と$Q$が同じときである。よってこれは$P$と$Q$の距離のような概念と考えられるが、一般に$D_{\mathrm{KL}}\qty(P \| Q) \neq D_{\mathrm{KL}}\qty(Q \| P)$であるため距離の公理の１つ$d(x,y)=d(y,x)$を満たさず、距離とよぶのは正しくない。
+
+また次の量を\daiji{交差エントロピー}（cross-entropy）という。
+$$H ( P , Q ) = H ( P ) + D_{ \mathrm{KL} } \qty( P \| Q ) .$$
+これを少し式変形をすると
+\begin{eqnarray}
+H(P,Q) &=& H(P)+D_{\mathrm{KL}}\qty(P \| Q) \nonumber\\
+&=& -\sum_{i} P(x_i) \log P(x_i) + \sum_{i} P(x_i) \log \frac{P(x_i)}{Q(x_i)} \nonumber\\
+&=& -\sum_{i} P(x_i) \log Q(x_i) = \mathbb{E}_{\mathrm{x}\sim P} \qty[-\log Q(x)] \label{eq : cross-entropy}
+\end{eqnarray}
+となり、$\mathrm{x}\sim P$のもとでの$Q(x)$のシャノン・エントロピー$\mathbb{E}_{\mathrm{x}\sim P} \qty[-\log Q(x)]$を表しているとわかる。KLダイバージェンスと比較して取り除かれている部分$\sum_{i} P(x_i) \log P(x_i)$は$Q$に依存しないため、交差エントロピーを$Q$に関して最小化することはKLダイバージェンスを最小化することと等価である。%交差エントロピーは\textcolor{red}{のちに}コスト関数としてよく用いる。
+
+\end{document}

@@ -1,0 +1,142 @@
+%\usepackage{docmute}
+\usepackage{amsmath,amssymb}
+\usepackage{bm}
+%\usepackage{graphicx}
+%\usepackage[dvipdfmx]{graphicx}
+\usepackage{graphicx}
+\usepackage[dvipdfmx]{color}
+\usepackage{subfigure}
+\usepackage{verbatim}
+\usepackage{wrapfig}
+\usepackage{ascmac}
+\usepackage{makeidx}
+\usepackage{physics}
+\usepackage{xcolor}
+\usepackage{empheq}
+\usepackage{listings,jlisting}
+\usepackage{url}
+%\usepackage{dcolumn}
+%
+\makeindex
+%
+\setlength{\textwidth}{\fullwidth}
+\setlength{\textheight}{40\baselineskip}
+\addtolength{\textheight}{\topskip}
+\setlength{\voffset}{-0.55in}
+%
+%
+% proof environment without \qed
+%
+\makeatletter
+%\renewenvironment{proof}[1][\proofname]{\par
+\newenvironment{Proof}[1][\Proofname]{\par
+  \normalfont
+  \topsep6\p@\@plus6\p@ \trivlist
+  \item[\hskip\labelsep{\bfseries #1}\@addpunct{\bfseries.}]\ignorespaces
+}{%
+  \endtrivlist
+}
+%\renewcommand{\proofname}{証明}
+%\renewcommand{\proofname}{Proof}
+\newcommand{\Proofname}{証明}
+%\newcommand{\Proofname}{Proof}
+\makeatother
+%
+% \qed
+%
+\makeatletter
+\def\BOXSYMBOL{\RIfM@\bgroup\else$\bgroup\aftergroup$\fi
+  \vcenter{\hrule\hbox{\vrule height.85em\kern.6em\vrule}\hrule}\egroup}
+\makeatother
+\newcommand{\BOX}{%
+  \ifmmode\else\leavevmode\unskip\penalty9999\hbox{}\nobreak\hfill\fi
+  \quad\hbox{\BOXSYMBOL}}
+%\renewcommand\qed{\BOX}
+\newcommand\QED{\BOX}
+%
+\begin{comment}
+
+\end{comment}
+\setcounter{secnumdepth}{4} %👈セクションとかの数字をどの深さまで表示するか？
+%
+%\definecolor{OliveGreen}{rgb}{0.0,0.6,0.0}
+%\definecolor{Orenge}{rgb}{0.89,0.55,0}
+%\definecolor{SkyBlue}{rgb}{0.28, 0.28, 0.95}
+\lstset{
+  language=Python,      %&lt;--%あるいは MathaticaやMatlab などリスト対象の言語を指定
+  basicstyle={\ttfamily},%
+  identifierstyle={\small},%
+ % commentstyle={\small\itshape},%
+%  keywordstyle={\small\bfseries},%
+  ndkeywordstyle={\small},%
+  %stringstyle={\small\ttfamily},
+  frame={tblr},
+  breaklines=true,
+  columns=[l]{fullflexible},%
+ numbers=left,%
+  xrightmargin=0zw,%
+  xleftmargin=3zw,%
+  numberstyle={\scriptsize},%
+  stepnumber=1,
+  numbersep=1zw,%
+  lineskip=-0.5ex,%
+  keywordstyle={\small\bfseries \color[RGB]{176,42,186}},
+  commentstyle={\small\itshape \color[RGB]{146,146,146}},  %注釈の書体
+  stringstyle={\small\ttfamily  \color[RGB]{41,44,51}}
+  }
+ %  keywordstyle={\small\bfseries \color{SkyBlue}},     %キーワード(int, ifなど)の書体指定
+%  commentstyle={\small\itshape \color{OliveGreen}},  %注釈の書体
+%  stringstyle={\small\ttfamily \color{Orenge}}          %文字列
+%
+%commentstyle={\small\ttfamily \color[rgb]{0,0.5,0}},
+%keywordstyle={\small\bfseries \color[rgb]{1,0,0}},
+%ndkeywordstyle={\small},
+%stringstyle={\small\ttfamily \color[rgb]{0,0,1}},
+%}
+%
+
+
+
+\usepackage{lipsum}
+
+%   Reduce the margin of the summary:
+\def\changemargin#1#2{\list{}{\rightmargin#2\leftmargin#1}\item[]}
+\let\endchangemargin=\endlist 
+
+%   Generate the environment for the abstract:
+\newcommand\summaryname{要旨}
+\newenvironment{Abstract}%
+    {\small\begin{center}%
+    \bfseries{\summaryname} \end{center}}
+
+
+
+
+%
+%%
+%これ以降ボルトの定義
+\newcommand{\T}{\top}
+\newcommand{\argmin}[1]{\underset{#1}{\mathrm{argmin}}~}
+\newcommand{\argmax}[1]{\underset{#1}{\mathrm{argmax}}~}
+\newcommand{\pmodel}[1]{ p_{\mathrm{model}} \qty( #1 ) }
+\newcommand{\pdata}[1]{ p_{\mathrm{data}} \qty( #1 ) }
+\newcommand{\phatdata}[1]{ \hat{p}_{\mathrm{data}} \qty( #1 ) }
+%\newcommand{\daiji}[1]{\textbf{\textsf{#1}}}
+\newcommand{\daiji}[1]{\textsf{#1}}
+\newcommand{\red}[1]{\textcolor{red}{#1}}% ⚠️変更するときは必ずその箇所を確認すること！
+\newcommand{\vtheta}{\vb*{\theta}}
+\newcommand{\ty}[1]{\url{#1}}
+\newcommand{\s}{~\mathrm{sec}}
+\newcommand{\cyan}[1]{#1}
+
+
+
+
+
+
+
+
+
+
+
+

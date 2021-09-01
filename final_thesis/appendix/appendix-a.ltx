@@ -1,0 +1,80 @@
+\documentclass[a4paper,11pt,oneside,openany,uplatex]{jsbook}
+\input{/Users/bolte/Desktop/my_palace/programming/深層学習/卒業論文/settings.ltx}
+\begin{document}
+\chapter{証明}
+ \begin{Proof}[自己情報量が$-\log P(x)$の形になることの証明]情報量$f$に要求される性質は$P$と$Q$を$\qty[0,1]$内の変数として
+\begin{empheq}[left={\empheqlbrace}]{align}
+ f(PQ)  &= f (P) + f(Q),\nonumber \\
+f(1)  &= 0, \nonumber \\
+f(P) &>0~~~\mathrm{for}~P\in [0,1)\nonumber
+\end{empheq}
+と書き表わせる。$\epsilon$を正の微小定数として、$Q=1-\epsilon$とする。$f(P(1-\epsilon))=f(P-\epsilon P)$を$\epsilon=0$まわりでテイラー展開すると
+$$f(P-\epsilon P)=f(P)-\epsilon P \dv{f(P)}{P}+\order{\epsilon^2}$$
+となることから、$f(P(1-\epsilon))=f(P)+f(1-\epsilon)$より
+$$f(1-\epsilon) \approx -\epsilon P \dv{f(P)}{P}.~~~~~\therefore ~ \dv{f(P)}{P} \approx -\frac{1}{P} \frac{f(1-\epsilon)}{\epsilon} \xrightarrow{\epsilon \rightarrow 0}-\frac{k}{P},$$
+ただし$f(1-\epsilon)/\epsilon$の$\epsilon \rightarrow 0$における極限を$k$とおいた。よって$f$に関する微分方程式が得られたのでこれを解くと$f(P)=-k\log P + C$となる。$f(1)=0$より積分定数はゼロであることがわかるので、$f(P)=-k\log P,~f(P)\ge 0$より$k$は正の定数であればよい。
+
+
+\QED
+\end{Proof}
+
+ \begin{Proof}[KLダイバージェンスの非負性$D_{\mathrm{KL}}\qty(P \| Q)\ge 0$の証明]
+ 一般に$y>0$に対して$\log y \le y-1$である。$y$を$Q(x_i)/P(x_i)$とすれば
+ $$\log \frac{Q(x_i)}{P(x_i)} \le \frac{Q(x_i)}{P(x_i)} -1.$$
+ 両辺に$-P(x_i)$をかけることにより
+ $$P(x_i) \log \frac{P(x_i)}{Q(x_i)} \ge  P(x_i) - Q(x_i)$$
+ を得る。両辺の総和をとれば
+  $$\sum_{i}P(x_i) \log \frac{P(x_i)}{Q(x_i)} \ge \sum_{i} P(x_i) - \sum_{i}Q(x_i)=1-1=0$$
+  より$D_{\mathrm{KL}}\qty(P \| Q)\ge 0$が示された。なお等号が成立するのは$\log y = y-1$を解いて$y=1$であるとき、すなわち$P(x_i)=Q(x_i)$となるときである。
+\QED
+\end{Proof}
+
+\begin{Proof}[$\displaystyle\lim_{x \to 0^{+}} x \log x=0$の証明]
+$$
+\lim_{x \to 0^{+}} x\log x = -\lim_{x \to 0^{+}}\frac{-\log x}{1/x} = -\lim_{x \to 0^{+}} \frac{-1/x}{-1/x^2}=-\lim_{x \to 0^{+}} x = 0^{-}.
+$$
+途中で$\infty / \infty$の不定形が現れるのでロピタルの定理を用いた。
+\QED
+\end{Proof}
+
+\begin{Proof}[「シャノン・エントロピーが最大となるのは一様分布のとき」の証明]
+第４章で最大化（最小化）問題を扱う場面があるので、ラグランジュの未定乗数法の復習を兼ねて載せておく。離散型確率変数$i=1,2,\ldots,n$に対する確率を$p_i$とする。シャノン・エントロピーは
+$$H(p_1,p_2,\ldots,p_n)=H(\vb*{p})=-\sum_{i=1}^{n} p_i \log p_i,$$
+ただし確率の総和が$1$であるという制約が付いている。
+$$\sum_{i=1}^{n} p_i - 1=0.$$
+なお確率を並べたベクトルを$\vb*{p}=\qty[p_1,p_2,\ldots,p_n]^\mathsf{T}$とした。この等式制約のもとでの最大化問題はラグランジュの未定乗数法を用いて解くことができる。ラグランジュ乗数を$\lambda$として、ラグランジュ関数を
+$$L(\vb*{p},\lambda)=-\sum_{i=1}^{n} p_i \log p_i+\lambda\qty(\sum_{i=1}^{n} p_i - 1)$$
+と作る。このとき
+\begin{empheq}[left={\empheqlbrace}]{align}
+ \pdv{L}{\vb*{p}}  &= \vb*{0},\nonumber \\
+ \pdv{L}{\lambda}  &= 0\nonumber
+\end{empheq}
+という条件を満たす点$(\vb*{p},\lambda)$が$H(\vb*{p})$の最大値を与える。具体的には
+\begin{empheq}[left={\empheqlbrace}]{align}
+ \pdv{L}{p_i}  &= -\log p_i-1+\lambda=0,~~~~~i=1,2,\ldots,n,\nonumber \\
+ \pdv{L}{\lambda}  &=\sum_{i=1}^{n} p_i - 1=0 ,\nonumber
+\end{empheq}
+となる。第１式より$p_i = e^{\lambda - 1},~$これを第２式に代入することで$n e^{\lambda - 1}-1=0$となるので$e^{\lambda - 1}=p_i=1/n$が得られる。したがってシャノン・エントロピーを最大にする離散型確率分布は一様分布である。
+
+\QED
+\end{Proof}
+
+\begin{Proof}[なぜ$J(\vb*{w}) = \mathrm{MSE}(\vb*{w}) + \lambda \vb*{w}^\T \vb*{w}$か？]
+目的関数を多項式とするときの係数のベクトル$\vb*{w}=\qty[w_0,w_1,\ldots,w_{n}]^\mathsf{T}$の成分が大きいと、目的関数の曲がり方が激しくなって、過学習に陥ってしまう。そこで$t$をある定数として、$\norm{\vb*{w}}_2^2 = \vb*{w}^\T \vb*{w} \le t$という制約のもとでの平均二乗誤差$\mathrm{MSE}(\vb*{w})=\frac{1}{m} \norm{X \vb*{w}-\vb*{y}}_2^2 = \frac{1}{m}  \qty(X\vb*{w}-\vb*{y})^\mathsf{T} \qty(X\vb*{w}-\vb*{y}) $の最小化を考える。これはKKT法を用いれば解ける。一般化ラグランジュ関数を
+$$L(\vb*{w},\lambda)=\frac{1}{m}  \qty(X\vb*{w}-\vb*{y})^\mathsf{T} \qty(X\vb*{w}-\vb*{y})  + \lambda \qty(  \vb*{w}^\T \vb*{w}- t )$$
+としてKKT条件は
+\begin{empheq}[left={\empheqlbrace}]{align}
+\pdv{L}{\vb*{w}} &= \frac{2}{m} \qty(X^\mathsf{T} X  \vb*{w} - X^\mathsf{T} \vb*{y}) + 2\lambda \vb*{w}= \vb*{0}  ,\nonumber \\
+\pdv{L}{\lambda}&= \vb*{w}^\T \vb*{w}- t  \le 0, \nonumber \\
+\lambda &  \qty( \vb*{w}^\T \vb*{w}- t ) = 0, \nonumber \\
+\lambda &\ge 0 \nonumber
+\end{empheq}
+となる。$\lambda = 0$の場合は最適な解$\vb*{w}$がもともと$\vb*{w}^\T \vb*{w} \le t$を満たしていたことを表す。もし$\lambda > 0$ならば$\vb*{w}^\T \vb*{w} = t$だが、$\vb*{w}$は第１式より$\vb*{w} = \qty( X^\T X + m \lambda I  )^{-1} X^\T \vb*{y}$である。したがって
+$$t = \vb*{w}^\T \vb*{w} = \qty[\qty( X^\T X +  m \lambda I   )^{-1} X^\T \vb*{y}]^\T \qty( X^\T X +  m \lambda I   )^{-1} X^\T \vb*{y}.$$
+これより$\lambda$の値を決めれば$t$の値は自動的に決まることがわかる。したがって、$\lambda$をパラメータとして最初から一般化ラグランジュ関数$L(\vb*{w},\lambda)$から$-\lambda t$の項を省いた$J(\vb*{w}) = \mathrm{MSE}(\vb*{w}) + \lambda \vb*{w}^\T \vb*{w}$という関数の最小化をすればよい。
+
+\QED
+\end{Proof}
+
+
+\end{document}

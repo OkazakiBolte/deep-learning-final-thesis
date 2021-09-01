@@ -1,0 +1,145 @@
+%\documentclass{jsarticle}
+%\documentclass[draft]
+%\documentclass[dvipdfmx,autodetect-engine,draft]{jsarticle}% autodetect-engine で pLaTeX / upLaTeX を自動判定
+\documentclass[dvipdfmx,autodetect-engine]{jsarticle}% autodetect-engine で pLaTeX / upLaTeX を自動判定
+
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{url}
+\usepackage{bm}
+\usepackage{comment}
+%\usepackage{split}
+\usepackage{multirow}
+\usepackage{listings,jlisting}
+\usepackage{braket}
+\usepackage{physics}
+\usepackage{xparse,amsmath}
+\usepackage{here}
+\usepackage{enumerate}
+\usepackage{mathrsfs}
+%\usepackage{jlistings} %日本語のコメントアウトをする場合jlistingが必要
+\setcounter{tocdepth}{3}
+\usepackage{amsmath,amssymb}
+
+
+
+
+
+%
+% proof environment without \qed
+%
+\makeatletter
+%\renewenvironment{proof}[1][\proofname]{\par
+\newenvironment{Proof}[1][\Proofname]{\par
+  \normalfont
+  \topsep6\p@\@plus6\p@ \trivlist
+  \item[\hskip\labelsep{\bfseries #1}\@addpunct{\bfseries.}]\ignorespaces
+}{%
+  \endtrivlist
+}
+%\renewcommand{\proofname}{証明}
+%\renewcommand{\proofname}{Proof}
+\newcommand{\Proofname}{証明}
+%\newcommand{\Proofname}{Proof}
+\makeatother
+%
+% \qed
+%
+\makeatletter
+\def\BOXSYMBOL{\RIfM@\bgroup\else$\bgroup\aftergroup$\fi
+  \vcenter{\hrule\hbox{\vrule height.85em\kern.6em\vrule}\hrule}\egroup}
+\makeatother
+\newcommand{\BOX}{%
+  \ifmmode\else\leavevmode\unskip\penalty9999\hbox{}\nobreak\hfill\fi
+  \quad\hbox{\BOXSYMBOL}}
+%\renewcommand\qed{\BOX}
+\newcommand\QED{\BOX}
+
+
+
+
+
+
+\begin{document}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%分数
+\newcommand{\f}[2]{\frac{#1}{#2}}
+%かける10のなんとか乗
+%\newcommand{\E}[1]{ \times 10^{#1}}
+%数式中の単位（空白付き）
+\newcommand{\un}[1]{~{\rm #1}}
+\newcommand{\euni}[2]{\E{#1}\un{#2}}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%このファイルのみに使っている自分用の定義
+%1. 期待値
+\newcommand{\E}[1]{E\qty[#1]}
+%2. 分散
+\newcommand{\V}[1]{V\qty[#1]}
+% 3. 平均
+\newcommand{\av}[1]{\overline{#1}}
+% 4. 転置
+\def\T{\mathsf{T}}
+
+
+
+
+\begin{flushright}
+作成日：\today
+\\慶應義塾大学理工学部物理学科\\岡崎健人
+\end{flushright}
+\begin{center}
+{\Large 主成分分析~~自分用教科書} 
+\end{center}
+%箇条書き
+%\tableofcontents   %👈目次
+%\newpage
+
+
+\section{２次元の場合}
+$n$個の２次元データ$\vb*{x}_i=\qty[x_i, y_i]^{\mathsf{T}}~(i=1,2,\ldots,n)$がある。これを$z=ax + b y$のように変換して、$z$軸上でデータの分散が最大になるように係数$\vb*{a}=\qty[a,b]^{\mathsf{T}}$を決めたい。$z$軸（この軸を第１主成分という）に射影したデータを$z_i = a x_i + b y_i = \vb*{a}^{\mathsf{T}} \vb*{x}_i$とする。$z_i$の平均$\overline{z}$は
+ $$\overline{z} = \frac{1}{n} \sum_{i=1}^{n} z_i = \frac{1}{n} \sum_{i=1}^{n} \vb*{a}^{\mathsf{T}} \vb*{x}_i = \vb*{a}^{\mathsf{T}} \frac{1}{n}  \sum_{i=1}^{n} \vb*{x}_i = \vb*{a}^{\mathsf{T}} \overline{\vb*{x}}$$
+となる。ここに$\av{\vb*{x}}=\qty[\av{x},\av{y}]^\T$である。$z$の分散は
+\begin{eqnarray*}
+s_{z}^{2} &=& \frac{1}{n} \sum_{i=1}^{n} \qty(z_i - \av{z})^2 =  \frac{1}{n} \sum_{i=1}^{n} \qty( \vb*{a}^\T \vb*{x}_i  - \vb*{a}^\T \av{\vb*{x}})^2 = \frac{1}{n} \sum_{i=1}^{n} \qty[a\qty(x_i - \av{x})+b\qty( y_i - \av{y})]^2 \\
+ &=& a^2 \frac{1}{n} \sum_{i=1}^{n} \qty(x_i - \av{x})^2 + 2ab \frac{1}{n} \sum_{i=1}^{n} \qty(x_i - \av{x}) \qty( y_i - \av{y}) + b^2 \frac{1}{n} \sum_{i=1}^{n} \qty( y_i - \av{y})^2 \\
+ &=& a^2 s_{x}^{2} + 2ab s_{xy} + b^2 s_{y}^{2} \\
+ &=& \qty[a,b] \mqty[ s_{x}^{2} & s_{xy} \\ s_{xy} & s_{y}^{2} ] \mqty[a \\ b] \\
+ &=&\vb*{a}^\T S \vb*{a}
+\end{eqnarray*}
+となる。$S$は標本分散共分散行列と呼ばれる。よって問題は$s_{z}^{2} = \vb*{a}^\T S \vb*{a}$が最大値を取る$\vb*{a}$を求めることである。ただしこのままだと$\norm{\vb*{a}} \rightarrow \infty $となり$s_{z}^{2}$が発散してしまうので、$\vb*{a}^\T \vb*{a} = 1$という条件をつける。この制約条件下での最大化問題はラグランジュの未定乗数法により解くことができる。未定乗数を$\lambda$として
+$$F(\vb*{a},\lambda) = \vb*{a}^\T S \vb*{a} + \lambda \qty(1 - \vb*{a}^\T \vb*{a})$$
+とおき、これを$\vb*{a}$で微分したものがゼロベクトルとなるような$\vb*{a}$を求めるのである。$\grad_{\vb*{a}}=\qty[\partial_a,\partial_b]^\T$とすると
+$\grad_{\vb*{a}} F(\vb*{a} , \lambda )= 2S\vb*{a}-2\lambda \vb*{a}=\vb*{0}$より
+$$S\vb*{a}=\lambda \vb*{a}.$$
+ただし$\grad_{\vb*{a}} \qty(\vb*{a}^\T S \vb*{a}) = 2S\vb*{a},~\grad_{\vb*{a}} \qty(\vb*{a}^\T \vb*{a} )= 2 \vb*{a}$となることを用いた$\vb*{a}$は標本分散共分散行列$S$の固有ベクトルであったことがわかる。また左から$\vb*{a}^\T$をかけて$\vb*{a}^\T \vb*{a} = 1$を使えば$s_{z}^2 = \vb*{a}^\T S \vb*{a} = \lambda,~$ゆえに最大化したかった分散は固有値に一致することがわかる。最大となる固有値を$\lambda_1,~$それに属する固有ベクトルを$\vb*{a}_1$とすれば第１主成分は$z_1 = {\vb*{a}_1}^\T \vb*{x} $となる。
+
+次に第１主成分と直交し、その分散が最大となるような軸$w$（第２主成分）を求める。２次元の場合は直交するという条件のみから決められるが、より多次元のデータを主成分分析すると直交するという条件のみからは決められない。その係数ベクトルを$\vb*{b}$とすると、その大きさが$1$であり（$\vb*{b}^\T \vb*{b}=1$）、$\vb*{a}_1$と直交し（${\vb*{a}_{1}}^\T \vb*{b}=0$）、$w$方向の分散$s_{w}^2=\vb*{b}^\T S \vb*{b}$を最大化する。ふたたびラグランジュの未定乗数法を用いる。$\lambda,~ \gamma$を未定乗数として、
+$$F(\vb*{b},\lambda,\gamma)=\vb*{b}^\T S \vb*{b}+\lambda \qty(1-\vb*{b}^\T \vb*{b})+\gamma {\vb*{a}_{1}}^\T \vb*{b}$$
+という関数を微分したものをゼロとおくと、$\grad_{\vb*{b}} F(\vb*{b},\lambda,\gamma)=2S\vb*{b} - 2\lambda \vb*{b}+\gamma \vb*{a}_1 = \vb*{0}. $これに左から${\vb*{a}_1}^\T$をかけ、$S\vb*{a}_1 = \lambda_1 \vb*{a}_1$より${\vb*{a}_1}^\T S = {\vb*{a}_1}^\T \lambda_1,~{\vb*{a}_{1}}^\T \vb*{b}=0,~{\vb*{a}_{1}}^\T \vb*{a}_1=1$となることを用いれば $\gamma = 0$を得る。したがって$\vb*{b}$は再び$S$の固有ベクトルであることがわかる。その固有値は２番目の固有値$\lambda_2,~$固有ベクトルは$\vb*{a}_2,~w$の分散は$s_w^2=\vb*{a}_2^\T S \vb*{a}_2=\lambda_2$となる。
+
+\section{一般次元の場合}
+$p$次元の変数$\vb*{x}=\qty[x_1,x_2,\ldots,x_p]$について、$n$個のデータ$\vb*{x}_1,\vb*{x}_2,\ldots,\vb*{x}_n$がある。平均のベクトルを$\av{\vb*{x}}$とする。また$j$成分の分散を$s_j^2,~$$j$成分と$k$成分の共分散を$s_{jk}$と書く。また$l$番目に分散を大きくするようにとった軸（第$l$主成分）を$y^{(l)}={\vb*{a}^{(l)}}^\T \vb*{x}$と書くことにする。$i$番目のデータ$\vb*{x}_i$を変換すると$y_i^{(l)}={\vb*{a}^{(l)}}^\T \vb*{x}_i$となる。係数ベクトルは$\vb*{a}^{(l)}=\qty[a_1^{(l)},a_2^{(l)},\ldots,a_p^{(l)}]^\T$である。$y^{(l)}$の分散は
+$$s_{y^{(l)}}^2 =\frac{1}{n} \sum_{i=1}^{n} \qty( {\vb*{a}^{(l)}}^\T \vb*{x}_i - {\vb*{a}^{(l)}}^\T \av{\vb*{x}} )^2= {\vb*{a}^{(l)}}^\T \frac{1}{n} \sum_{i=1}^{n} \qty( \vb*{x}_i - \av{\vb*{x}} ) \qty( \vb*{x}_i - \av{\vb*{x}} )^\T $$
+
+
+
+
+\newpage
+\Proof
+$n$次元のベクトル$\vb*{x}=\qty[x_1,x_2,\ldots,x_n]^\T$と$n$次対称行列$A$について、$\grad=\qty[\partial_1, \partial_2,\ldots, \partial_n]^\T$とすると$\grad \qty(\vb*{x}^\T A \vb*{x}) = 2A\vb*{x},~\grad \qty(\vb*{x}^\T \vb*{x})=2\vb*{x}$となることを示す。まず$\grad \qty(\vb*{x}^\T \vb*{x})=2\vb*{x}$のほうが簡単そうなのでこちらから証明する。アインシュタインの縮約を用いれば$\vb*{x}^\T \vb*{x} = x_i x_i$なので
+$$\grad \qty(\vb*{x}^\T \vb*{x})=\partial_j \qty(x_i x_i)\vb*{e}_j = 2 x_i \qty(\partial_j x_i) \vb*{e}_j = 2 x_i \delta_{ij} \vb*{e}_j = 2 x_i \vb*{e}_i = 2\vb*{x}.$$
+また$A\vb*{x}=\qty(a_{j1} x_1 + a_{j2} x_2 + \cdots + a_{jn} x_n) \vb*{e}_j = a_{ji} x_i \vb*{e}_j$であるから$\vb*{x}^\T A \vb*{x} = x_j a_{ji} x_i = a_{ij} x_i x_j.~$ゆえに
+\begin{eqnarray*}
+  \grad(\vb*{x}^\T A \vb*{x}) &=& \partial_k \qty( a_{ij} x_i x_j ) \vb*{e}_k =   a_{ij} \partial_k \qty( x_i x_j ) \vb*{e}_k = a_{ij} x_i \delta_{kj} \vb*{e}_k + a_{ij} \delta_{ik} x_j \vb*{e}_k\\
+  &=&  a_{ij} x_i  \vb*{e}_j + a_{ij}  x_j \vb*{e}_i =   a_{ji}^\T x_i  \vb*{e}_j + a_{ij}  x_j \vb*{e}_i \\
+  &=& A^\T \vb*{x} + A \vb*{x} = \qty( A^\T + A) \vb*{x} \\
+  &=& 2A\vb*{x}. 
+ \end{eqnarray*}
+ただし$A$が対称行列であること$A^\T = A$を用いた。
+\QED
+
+
+%\begin{thebibliography}{9}
+%  \bibitem{あ} 奥村晴彦（1 991年），「C言語による最新アルゴリズム事典」，技術評論社
+
+%\end{thebibliography}
+\end{document}

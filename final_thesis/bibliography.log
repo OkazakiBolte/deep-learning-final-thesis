@@ -1,0 +1,37 @@
+This is e-upTeX, Version 3.14159265-p3.8.2-u1.24-190131-2.6 (utf8.uptex) (TeX Live 2019) (preloaded format=uplatex 2019.12.28)  24 JAN 2020 14:56
+entering extended mode
+ restricted \write18 enabled.
+ file:line:error style messages enabled.
+ %&-line parsing enabled.
+**bibliography.ltx
+(./bibliography.ltx
+pLaTeX2e <2019-04-06u02> (based on LaTeX2e <2018-12-01>)
+
+./bibliography.ltx:1: LaTeX Error: Environment thebibliography undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1 \begin{thebibliography}
+                           {9}
+? 
+./bibliography.ltx:1: Emergency stop.
+ ...                                              
+                                                  
+l.1 \begin{thebibliography}
+                           {9}
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+ 
+Here is how much of TeX's memory you used:
+ 4 strings out of 493212
+ 196 string characters out of 6144391
+ 62453 words of memory out of 5000000
+ 4105 multiletter control sequences out of 15000+600000
+ 6281 words of font info for 32 fonts, out of 8000000 for 9000
+ 929 hyphenation exceptions out of 8191
+ 5i,0n,4p,61b,16s stack positions out of 5000i,500n,10000p,200000b,80000s
+No pages of output.

@@ -1,0 +1,78 @@
+\documentclass[a4paper,11pt,oneside,openany,uplatex]{jsbook}
+\usepackage{docmute}
+\usepackage{xr}
+\externaldocument{/Users/bolte/Desktop/my_palace/programming/深層学習/卒業論文/a/a-c/a-c.ltx}
+\externaldocument{/Users/bolte/Desktop/my_palace/programming/深層学習/卒業論文/a/a-a/a-a.ltx}
+%
+\input{settings.ltx}
+%
+\graphicspath{{/Users/bolte/Desktop/my_palace/programming/深層学習/卒業論文/fig/}}
+%
+\title{手書き数字の認識のためのニューラルネットワークの評価および改善}
+\author{岡崎健人}
+\date{\today}
+%
+\begin{document}
+
+\begin{titlepage}
+    \begin{center}
+
+        {\Large 2019年度}
+
+        \vspace{10truept}
+
+        {\Large 卒業研究報告書}
+
+        \vspace*{180truept}
+
+        {\Huge 手書き数字の認識のためのニューラルネットワークの評価および改善}
+
+        \vspace{160truept}
+
+        {\Large 指導教員}
+
+        \vspace{10truept}
+
+        {\Large 高野宏教授  山内淳准教授  古池達彦専任講師}
+
+        \vspace{70truept}
+
+        {\Large 慶應義塾大学}
+
+        \vspace{10truept}
+
+        {\Large 理工学部物理学科}
+
+        \vspace{30truept}
+
+        {\Large 学籍番号61603670   岡崎健人}
+
+    \end{center}
+\end{titlepage}
+
+\frontmatter
+%
+\addcontentsline{toc}{chapter}{概要}
+\input{abstract.ltx}
+
+\setcounter{tocdepth}{1}
+\tableofcontents
+%
+\mainmatter
+%
+\input{a/a.ltx}
+\input{b/b.ltx}
+\input{c/c.ltx}
+
+\appendix
+    \input{appendix/appendix-b.ltx}
+
+\chapter*{謝辞}
+    \addcontentsline{toc}{chapter}{謝辞}
+    \input{acknowledgement.ltx}
+
+% Bibliography
+\input{bibliography.ltx}
+
+\newpage
+\end{document}

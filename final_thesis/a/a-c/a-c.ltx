@@ -1,0 +1,289 @@
+\documentclass[a4paper,11pt,oneside,openany,uplatex]{jsbook}
+\input{/Users/bolte/Desktop/my_palace/programming/深層学習/卒業論文/settings.ltx}
+\graphicspath{{/Users/bolte/Desktop/my_palace/programming/深層学習/卒業論文/fig/}}
+
+
+
+\begin{document}
+\chapter{機械学習の基礎}
+
+\daiji{機械学習}（machine learning）とは、明示的にプログラミングせずに、コンピュータが十分な量のデータからその特徴や傾向を発見し、未知の事例に対しても予測を行うための科学分野である。画像認識や音声認識、株価の予測、機械による多言語間の翻訳、ネット上でのおすすめの商品の提案など、現在その応用は多岐にわたっている。欧州原子核研究機構（CERN）における素粒子実験では、大量のデータを解析するために機械学習が用いられている。
+
+機械学習には大きく分けて、\daiji{教師あり学習}（supervised learning）、\daiji{教師なし学習}（unsupervised learning）、\daiji{強化学習}（reinforcement learning）の３つの形態が存在する。教師あり学習では、アルゴリズムに与えるデータに正解がついていて、システムがその傾向を学習することにより、未知のデータに対しても予測ができるようにする。教師なし学習では正解が与えられず、システムが自力で傾向を学習する。強化学習では、エージェントとよばれる学習システムが環境を観察して行動し、できるだけ高い報酬を得るように学習をする。
+
+本論文の目的である手書き数字の認識は教師あり学習に分類される。
+
+  \section{教師あり学習}
+%十分な量の\daiji{訓練データ}（training data）と各データに付された正解を表す\daiji{ラベル}（label）をシステムに与え、その規則を学習させるアルゴリズムを\daiji{教師あり学習}（supervised learning）という。そのシステムの\daiji{性能}（performance）は\daiji{テストデータ}（test data）を与えたときのシステムの予測と、テストデータのラベルから計算される。
+例えば、コンピュータに犬と猫の画像を入力したら、写っている動物がどちらなのかを判別するようにさせたい。適切なシステムをプログラミングしたのち、これに多数の画像を与えてそれが犬か猫なのかを教え、耳が立っているとか鼻が長いなどそのパターンを学習させる。それが済んだら新たな写真をシステムに与えてどちらかを予測させる。このように、システムに与えるデータに正解が付されている場合、その学習アルゴリズムは\daiji{教師あり学習}（supervised learning）に分類される。
+
+教師あり学習において重要な用語がいくつかあるため、箇条書きして説明する。
+
+\begin{itemize}
+  \item \daiji{モデル}（model）：ある入力を受け取って何らかの処理を行い出力するシステムのことを機械学習の分野ではモデルという。
+  \item \daiji{訓練データ}（training data）：モデルに学習をさせるために用いられるデータのこと。訓練データの集合を\daiji{訓練集合}（training set）という。各訓練データは一般にベクトルの情報であり、数式の上では$\vb*{x}$などを用いる。
+  \item \daiji{テストデータ}（test data）：モデルがどの程度学習できたのかを測るために与えられるデータのこと。訓練集合と同じように、テストデータの集合を\daiji{テスト集合}（test set）という。
+  \item \daiji{ラベル}（label）： モデルに与える各データにタグづけされた、モデルにとっての正解。犬と猫の分類ならばそれらを$0$と$1$などで表し、手書きの数字画像を識別させるならば、その画像に書かれている数字がラベルとなる。数式の上では記号$y$などを用いる。
+  \item \daiji{クラス}（class）：通常、ラベルは離散的である。そのラベルが意味する内容をクラスとよぶ。「犬」、「猫」、「$0$」、「$1$」、「$2$」…などがクラスである。犬と猫の例のように、$2$つのクラスに分類する問題を\daiji{二値分類}（binary classification）、手書き数字のように分類すべきクラスが$3$つ以上あるときは\daiji{多クラス分類}（multiclass classification）という。
+  \item \daiji{パラメータ}（parameter）：最も単純なモデルの出力は、入力$\vb*{x}$の何らかの関数である。その関数を$f( \vb*{x} ) = \vb*{w}^{\T} \vb*{x} + b$と表現したとき、この$\vb*{w}$と$b$をパラメータという。$\vb*{w}$を\daiji{重み}（weight）、$b$を\daiji{バイアス}（bias）という。重みとバイアスをまとめて、パラメータはギリシャ文字の$\vb*{\theta}$を用いて書かれる場合もある。モデルが行う学習とは、最適なパラメータの値を訓練データを用いて求めることである。
+  \item \daiji{コスト関数}（cost function）：モデルの予測と実際のラベルとの差を表したもの。予測は一般にパラメータの関数であるから、コスト関数もパラメータの関数である。学習ではコスト関数が小さくなるように、パラメータを変化させていく。
+  \item \daiji{ニューラルネットワーク}（neural network）：教師あり学習をするモデルの一形態。神経細胞が連鎖したような構造をしており、\daiji{入力層}、\daiji{隠れ層}、\daiji{出力層}からなる。
+  \item \daiji{ディープラーニング}（deep learning）：多数の隠れ層の持つニューラルネットワークで学習をすること。\daiji{深層学習}ともいう。
+  \item \daiji{汎化能力}（generalization ability）：訓練時に与えられたデータだけでなく、新たな未知のデータに対しても正しい予測ができる能力のこと。
+  \item \daiji{汎化誤差}（generalization error）：学習を終えたモデルが新たな未知のデータについて予測を行ったとき、その予測と正しい答えとの誤差のこと。
+  \item \daiji{計画行列}（design matrix）：訓練データを１つ１つ入力するよりも、複数をまとめて入力する方が効率的な場合はしばしばある。このとき訓練データを用いて計画行列を作り、これを入力とする。具体的には$m$個の訓練データ$\qty(\vb*{x}^{(i)}, y^{(i)}),~i=1\ldots,m$が与えられたとし、スカラーの基底関数を$\phi_{j} (\vb*{x}),~j=1,\ldots,k$とすれば、計画行列$X$の要素は$\qty(X)_{ij}= \phi_{j}\qty(\vb*{x}^{(i)})$である。
+  \item \daiji{過学習}（overlearning）：モデルの予測が訓練データに適合しすぎて、新たな未知のデータに対して誤った予測をしてしまうこと。\daiji{過剰適合}（overfitting）ともいう。原因としては訓練データが少なすぎることやパラメータの値が大きすぎる、パラメータが多すぎることなどが挙げられる。対応策としては訓練データを増やしたり、正則化を行うことが挙げられる。
+  \item \daiji{正則化}（regularization）：過学習を防ぐための手法の１つ。パラメータの値が大きくなりすぎないようにすること。具体的にはコスト関数に\daiji{正則化項}（regularization term）とよばれる$\lambda \norm{\vb*{w}}_1^1$や$\lambda \norm{\vb*{w}}_2^2$などの項を加えて学習をさせる。
+  \item \daiji{ハイパーパラメータ}（hyperparameter）：モデルの学習では値を決めることのできないパラメータのこと。人間がこの値を調節する。
+\end{itemize}
+
+
+  \section{最適化}
+  ある関数$J \qty( \vtheta )$に対して、ある条件下で$J \qty( \vtheta )$が最小（あるいは最大）となる引数$\vtheta $%$x^{\ast} = \argmin{x} J \qty( \vtheta )$
+  を求める問題を\daiji{最適化問題}（optimization problem）という。$J \qty( \vtheta )$の最小値、最大値を与える引数の集合をそれぞれ$\argmin{\vtheta } J \qty( \vtheta ) , ~\argmax{\vtheta } J \qty( \vtheta )$と書き、要素が単一のときは要素そのものを返すとして取り扱う。$\argmin{\vtheta } J \qty( \vtheta ) , ~\argmax{\vtheta } J \qty( \vtheta )$の要素のことを、一般的には用いられないが本稿では\daiji{最小点}、\daiji{最大点}、\daiji{最適点}などとよぶことにし、その点を$\vtheta^{\ast}$のようにアスタリスク記号を付して表す。
+
+  紙とペンしかない状況では、$J \qty( \vtheta )$の導関数を求めてゼロとおいた方程式
+  \begin{equation}
+   \grad_{\vtheta } J \qty( \vtheta ) = \vb*{0}   \label{eq : the-derivative-equals-to-zero}
+   \end{equation}
+  を解くことで最適点$\vtheta ^{\ast}$を求めることができる。条件付き最適化問題を解くための手法としては\daiji{ラグランジュの未定乗数法}（method of Lagrange multiplier）や、それを不等式制約に拡張した\daiji{KKT条件}（Karush-Kuhn-Tucker conditions）を用いた解法などが知られている。しかし$J \qty( \vtheta )$によっては式(\ref{eq : the-derivative-equals-to-zero})の解析的な解が常に得られるとは限らないし、機械学習の分野では導関数の式の形ではなく、その値の方がより重要であることが多い。
+
+  最適化問題を解くための手法のことを\daiji{最適化アルゴリズム}（optimization algorithm）や\daiji{オプティマイザ}（optimizer）という。また関数の勾配を用いた最適化アルゴリズムの総称を\daiji{勾配法}（gradient method）という。ここでは機械学習における基本的なオプティマイザを６つ紹介する。　\\
+
+
+
+%関数$J(\vb*{\theta})$はパラメータのベクトル$\vb*{\theta}$によって特徴付けられているものとする。
+
+      %\subsection{最急降下法}
+      \daiji{最急降下法}（gradient descent, steepest descent）は勾配法のうち最も単純で基本的なものである。最急降下法は反復的なアルゴリズムで、$k$回目の反復の引数を$\vtheta^{(k)},~$最小値を求める関数を$J \qty(\vtheta)$として、次のように計算を行う。
+      \begin{enumerate}
+        \item 引数$\vtheta$の初期値$\vtheta^{(0)}$をランダムに選ぶ。
+        \item $\grad_{\vtheta} J \qty( \vtheta^{(k)} ) = \vb*{0}$ならば終了する。 \label{enum : end-of-GD}
+        \item そうでなければ次の式にしたがって引数$\vtheta$を更新する。
+              \begin{equation}
+               \vtheta^{(k + 1)} = \vtheta^{(k)} - \eta \grad_{\vtheta} J \qty( \vtheta^{(k)} ) \label{eq : GD}
+              \end{equation} \label{enum : updating}
+        \item 上記\ref{enum : end-of-GD}と\ref{enum : updating}を繰り返す。
+      \end{enumerate}
+
+      計算機上で実際には正確に勾配が$0$に等しくなることはないため、 $\grad_{\vtheta} J \qty( \vtheta^{(k)} ) $が十分小さな値になった時点で終了する。式(\ref{eq : GD})の係数$\eta$をステップ幅、あるいは機械学習の文脈では\daiji{学習率}（learning rate）という。これは更新の度合いを決めるハイパーパラメータであり、通常小さな正の値に設定される。
+ %関数$J(\vb*{\theta})$をバッチ勾配降下法（batch gradient descent, BGD）を用いて最小化することがここでの目的である。
+
+%まず初期値$\vb*{\theta}_0$をランダムに選び、その点での勾配$\grad_{\vb*{\theta}} J\qty( \vb*{\theta}_0)$を計算する。そして
+%$$ J(\vb*{\theta}_1) \leftarrow J(\vb*{\theta}_0) - \vb*{\eta}^\T  \grad_{\vb*{\theta}} J(\vb*{\theta}_0)$$
+%のように関数$J(\vb*{\theta})$を更新する。さらにその点$\vb*{\theta}_1$を初期値として同じ操作を反復すれば、最小点$\argmin{\vb*{\theta}}{J\qty(\vb*{\theta})}$に収束する。係数のベクトル$\vb*{\eta} = \qty[ \eta_1 , \ldots , \eta_k ]^\T$の成分あるいはベクトル自体のことを、ステップ幅あるいは機械学習の文脈では学習率（learning rate）とよばれる。
+
+%数値計算上では、関数の微分はその定義の近似を用いればよい。
+%$$\dv{f(x)}{x} = \lim_{\Delta x \to 0} \frac{f(x + \Delta x) - f(x)}{ \Delta x} \approx  \frac{f(x + \Delta x) - f(x)}{ \Delta x}.$$
+
+学習率の値は大きすぎず小さすぎないのがよい。もし学習率が大きすぎると、ステップごとに最小点を通り過ぎてしまい、収束が遅くなるか収束できなくなるからである。反対に小さすぎると１ステップが小さいため収束が遅くなる。
+
+また初期値$\vtheta^{(0)}$の値によっては、求めたい大域的最小値ではなく局所的最小値に収束してしまう可能性がある。関数のグラフが局所的に谷になっている部分を\daiji{局所的最小値}（local minimum）といい、関数の真の最小値を\daiji{大域的最小値}（global minimum）という（図\ref{fig : mins}）。
+%１枚の画像
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=120mm]{fig-mins.png}
+\caption{大域的最小と局所的最小}
+\label{fig : mins}
+\end{figure}
+
+
+機械学習では一般に、関数$J(\vb*{\theta})$は$m$個の訓練データそれぞれから得られる関数$J_{i} (\vb*{\theta}),~i = 1 , \ldots , m$の和
+$$J\qty(\vb*{\theta}) = \sum_{i=1}^{m} J_i \qty(\vb*{\theta})$$
+であるが（後述、式(\ref{eq : cost-function-mean-squared-error})や式(\ref{eq : cost-function-cross-entropy})）、その場合最急降下法はコストが高い方法である。パラメータのそれぞれの成分についての微分を計算するので、１ステップあたり$m\times k$回の計算が必要である。総ステップは1000回とすると、例えば$m=10000,~k=10$であるとすれば全体で$10^8$回の計算が必要になってしまい、データ数が大きいと遅いアルゴリズムであることがわかる。\\
+
+
+%平均二乗誤差$\mathrm{MSE}\qty( \vb*{\theta} )$であることはよくある。
+%その場合、勾配降下法はコストが高い方法である。訓練データの数を$m,~$パラメータの数を$k$とすれば、平均二乗誤差は$m$項からなる。パラメータのそれぞれの成分についての微分を計算するので、１ステップあたり$m\times k$回の計算が必要である。ステップは1000回行うことが普通であるので、例えば$m=10000,~k=10$であるとすれば全体で$10^8$回の計算が必要になってしまい、データ数が大きいと遅いアルゴリズムであることがわかる。
+
+      %\subsection{確率的勾配降下法}
+   関数$J(\vb*{\theta})$は$m$個の訓練データに関する関数$J_{i} (\vb*{\theta})$全てを用いて計算されるが、このニュアンスを強調して最急降下法を\daiji{バッチ勾配降下法}（batch gradient descent）とよぶ。それに対して訓練データからランダムに１つ選んで、その関数のみについての勾配を計算し、それを用いて更新してゆく手法を\daiji{確率的勾配降下法}（stochastic gradient descent）という。その訓練データはステップごとに選び直す。
+
+確率的な性質を持つため、最小点に向かってゆく過程は複雑になる。平均的には最小値に向かって緩やかに小さくなっていくのだが、最小値周りに達すると勾配は様々な方向を向いているので、１箇所に落ち着くことがない。そのため確率的勾配降下法による最終的なパラメータは十分よいものだが最適ではない。しかし関数$J (\vb*{\theta})$が複数の極小値を持つような複雑な関数の場合、確率的な性質のおかげで、関数の谷となっている部分から抜け出し、真の最小値にたどり着く可能性は大きくなる。\\
+
+
+      %\subsection{ミニバッチ勾配降下法}
+    \daiji{ミニバッチ勾配降下法}（minibatch gradient descent）はバッチ勾配降下法と確率的勾配降下法の中間的なアルゴリズムである。ステップごとに訓練データから複数個のデータをランダムに抜き出して、それらの関数$J (\vb*{\theta})$の勾配から最小値を探し出す。ランダムに選ばれた訓練データの集合を\daiji{ミニバッチ}（minibatch）とよぶ。$N$ステップ目の、$m'  (< m)$個の訓練データからなるミニバッチを$\mathbb{B}_{N}$と表せば、$N$ステップ目の関数は
+$$J_N(\vb*{\theta}) = \sum_{\vb*{x}^{(i)} \in \mathbb{B}_N} J_i\qty(\vb*{\theta}) %= \frac{1}{m'} \sum_{\vb*{x}^{(i)} \in \mathbb{B}_N} \qty( \hat{y}^{(i)} - y^{(i)} )^2
+$$
+とかける。\cyan{$N$ステップ目ではこの勾配を用いて、それ自身の最小点を求める。}
+
+%例えばサイズ$m ' = 1000$のミニバッチ勾配降下法を$l$回すれば、訓練集合の数$m = 60000$と同程度のデータを使用できるとする。%すなわち$m = O(m ' l)$であるとする。のとき訓練集合すべてを\daiji{エポック}（epoch）
+例えば$m = 60000$個の訓練データに対して、$m ' = 1000$のミニバッチ勾配降下法を行えば、$60$回のパラメータ更新が行われるが、これを$1$エポックという。すなわち\daiji{エポック}（epoch）は訓練集合を$1$つ丸々使うのにかかる期間である。通常$1$エポックでは足りず、複数回行う必要がある。例でエポック数を$100$とすれば、パラメータ更新は$100 \times 60 = 6000$回行われる。
+
+\cyan{確率的勾配降下法とミニバッチ勾配降下法の違いは、ミニバッチに選ばれる訓練データが単一か複数かという点である。そのため両者の区別を気にせずにミニバッチ勾配降下法のことを確率的勾配降下法とよぶことがある。}\\
+
+
+確率的勾配降下法（ミニバッチ勾配降下法）は、その無作為性によって局所的な最小値から逃れる可能性はあがるが、最小値に落ち着かず収束が遅いという問題がある。\daiji{Momentum SDG}\cite{bib : momentum-sdg}はその影響を抑えることができる。そのアルゴリズムは式で
+\begin{align} \label{eq : momentum-sdg}
+\begin{cases}
+ \vb*{v}^{(0)} &= \vb*{0} , \\
+      \vb*{v}^{(k + 1)} &= \beta \vb*{v}^{(k)} - \eta \grad_{\vtheta} J\qty( \vtheta^{(k)} ) , \\
+      \vtheta^{(k + 1)} &= \vtheta^{(k)} + \vb*{v}^{(k + 1)}
+\end{cases}
+\end{align}
+\begin{comment}
+\begin{eqnarray}
+  \left\{
+    \begin{array}{l}
+      \vb*{v}^{(0)} = \vb*{0} , \\
+      \vb*{v}^{(k + 1)} = \beta \vb*{v}^{(k)} - \eta \grad_{\vtheta} J\qty( \vtheta^{(k)} ) , \\
+      \vtheta^{(k + 1)} = \vtheta^{(k)} + \vb*{v}^{(k + 1)}
+    \end{array}
+  \right.
+\end{eqnarray}
+
+\begin{eqnarray*}
+\vb*{v}^{(0)} &=& \vb*{0} , \\
+\vb*{v}^{(k + 1)} &=& \beta \vb*{v}^{(k)} - \eta \grad_{\vtheta} J\qty( \vtheta^{(k)} ) , \\
+\vtheta^{(k + 1)} &=& \vtheta^{(k)} + \vb*{v}^{(k + 1)}
+\end{eqnarray*}
+\end{comment}
+と表せる。ただしここでのコスト関数$J(\vtheta)$はステップごとにランダムに選んだミニバッチを用いて計算されたものである。
+
+これは物理的な解釈が可能である。質点$m$の物体が抵抗係数$\kappa$の空気中を運動することを考える。時刻を$t$として、連続的な位置ベクトル$\vtheta = \vtheta(t)$と保存するポテンシャルエネルギー$J(\vtheta)$を用いて、古典力学的な運動方程式は
+$$m \dv[2]{\vtheta}{t} + \kappa \dv{\vtheta}{t} = - \grad_{\vtheta} J(\vtheta)$$
+と与えられる。この運動方程式を離散化することで
+$$ m \frac{ \qty( \vtheta \qty( t + \Delta t ) -\vtheta \qty( t )) - \qty( \vtheta \qty( t ) -\vtheta \qty( t - \Delta t )) }{ \qty( \Delta t )^{2} } + \kappa \frac{ \vtheta \qty( t + \Delta t ) -\vtheta \qty( t ) }{ \Delta t }= - \grad_{\vtheta } J \qty(\vtheta \qty( t )) $$
+を得るが、式変形をすれば
+$$ \vtheta \qty( t + \Delta t ) -\vtheta \qty( t ) = \frac{m}{ m + \kappa \Delta t } \qty( \vtheta \qty( t ) -\vtheta \qty( t - \Delta t )) - \frac{ \qty( \Delta t )^{2} }{ m + \kappa \Delta t }  \grad_{\vtheta } J \qty(\vtheta \qty( t )) $$
+となる。この式において
+%$$\vtheta \qty( t ) \rightarrow \vtheta^{(k)},~~~~\vtheta \qty( t + \Delta t ) \rightarrow \vtheta^{(k+1)},~~~~\vtheta \qty( t - \Delta t ) \rightarrow \vtheta^{(k-1)}, $$ $$\vtheta \qty( t + \Delta t ) -\vtheta \qty( t ) \rightarrow \vb*{v}^{(k + 1)} , ~~ ~~\vtheta \qty( t ) -\vtheta \qty( t - \Delta t ) \rightarrow \vb*{v}^{(k)}, $$
+$$ \vtheta \qty( t ) \rightarrow \vtheta^{(k)},~~~~ \vtheta \qty( t + \Delta t ) -\vtheta \qty( t ) \rightarrow \vb*{v}^{(k + 1)} ,$$
+$$\frac{m}{ m + \kappa \Delta t } \rightarrow \beta , ~~ ~~\frac{ \qty( \Delta t )^{2} }{ m + \kappa \Delta t } \rightarrow \eta$$
+のように置き換えたのが式(\ref{eq : momentum-sdg})である。$\beta = 0$とすれば通常の確率的勾配降下法に一致する。すなわち確率的勾配降下法は空気抵抗を無視して質点の運動を求めることに相当していたが、Momentum SDGは空気抵抗を考慮したものに相当する。また$\beta = m / \qty( m + \kappa \Delta t  )$より$ 0 \le \beta \le 1$であることがわかる。空気抵抗を考慮したので、質点がポテンシャルの最小点に近づいて速度を失ってゆくとステップの幅が小さくなってゆき、結果として確率的勾配降下法による振動の幅を小さくして、収束を早めることができる。\\
+
+%\subsection{AdaGrad}
+アルゴリズム\daiji{AdaGrad}\cite{bib : AdaGrad}は学習率をステップごと、ベクトルの成分ごとに変えることで収束を早めることができる。
+\begin{empheq}[left={\empheqlbrace}]{align}
+ \vb*{v}^{(0)} &= \vb*{0}  ,\nonumber \\
+\vb*{v}^{(k + 1)} &=  \vb*{v}^{(k)} + \grad_{\vtheta} J\qty( \vtheta^{(k)} ) \odot \grad_{\vtheta} J\qty( \vtheta^{(k)} ) , \nonumber  \\
+\vtheta^{(k + 1)} &= \vtheta^{(k)} -  \frac{ \eta }{\sqrt{ \vb*{v}^{(k + 1)}} + \epsilon } \odot \grad_{\vtheta} J\qty( \vtheta^{(k)} ) \label{eq : adagrad}
+\end{empheq}
+と更新する。ただし式(\ref{eq : adagrad})における$\eta / \qty( \sqrt{\vb*{v}^{(k + 1)} } + \epsilon )$は第$i$成分に$\eta / \qty( \sqrt{v_{i}^{(k + 1)}} + \epsilon )$を持つようなベクトルで、$\epsilon > 0$は分母が$0$となることを防ぐ定数である。この$\vb*{v}^{(k + 1)}$にはそれまでの各更新の勾配の$2$乗が加算されてゆき、各成分は更新ごとに大きくなるため、$\eta / \qty( \sqrt{\vb*{v}^{(k + 1)} } + \epsilon )$はだんだん小さくなってゆく。したがって勾配が小さくなると式(\ref{eq : adagrad})で更新する量はさらに小さくなり、収束が早まることが期待される。しかし勾配がまだ大きくても更新が繰り返されると学習率の部分は小さくなってゆくので、更新が進まなくなる可能性もある。\\
+
+%\subsection{Adam}
+\daiji{Adam}\cite{bib : Adam}はMomentum SGDとAdaGradの両方を組み合わせたようなアルゴリズムで、以下のように更新する。
+\begin{empheq}[left={\empheqlbrace}]{align}
+ \vb*{m}^{(0)} &= \vb*{0}  ,\nonumber \\
+ \vb*{v}^{(0)} &= \vb*{0}  ,\nonumber \\
+  \vb*{m}^{(k + 1)} &= \beta_{1} \vb*{m}^{(k)} + \qty(1 - \beta_{1}) \grad_{\vtheta} J\qty( \vtheta^{(k)} )  , \label{eq : adam-m} \\
+   \vb*{v}^{(k + 1)} &= \beta_{2} \vb*{v}^{(k)} + \qty(1 - \beta_{2}) \grad_{\vtheta} J\qty( \vtheta^{(k)} ) \odot \grad_{\vtheta} J\qty( \vtheta^{(k)} ) , \label{eq : adam-v} \\
+\hat{ \vb*{m} }^{(k+1)} &= \frac{\vb*{m}^{(k + 1)}}{ 1 - \beta_{1}^{k} }  , \label{eq : adam-m-hat}\\
+\hat{ \vb*{v} }^{(k+1)} &= \frac{\vb*{v}^{(k + 1)} }{ 1 - \beta_{2}^{k} } , \label{eq : adam-v-hat} \\
+\vtheta^{(k + 1)} &= \vtheta^{(k)} - \frac{\eta}{ \sqrt{ \hat{ \vb*{v} }^{(k+1)} } + \epsilon } \odot  \hat{ \vb*{m} }^{(k+1)}.\nonumber
+\end{empheq}
+式(\ref{eq : adam-m})はMomentum SGDを改良したもので、これまでの更新の蓄積$\vb*{m}^{(k)}$と勾配$\grad_{\vtheta} J\qty( \vtheta^{(k)} )$のどちらを重要視するかという割合を$\beta_{1}$で表している。式(\ref{eq : adam-v})は同様にAdaGradを改良したもので、これまでの更新の蓄積$\vb*{m}^{(k)}$と勾配の成分ごとの$2$乗のベクトル$\grad_{\vtheta} J\qty( \vtheta^{(k)} ) \odot \grad_{\vtheta} J\qty( \vtheta^{(k)} )$の重みの割合を$\beta_{2}$で表している。更新量が小さくなってゆくのを防ぐために式(\ref{eq : adam-m-hat})で$ 1 < 1 / \qty(1 - \beta_{1}^{k} ) $倍しておく。$\vb*{v}^{(k)}$の方も同様である(\ref{eq : adam-v-hat})。
+
+ % \section{線形回帰}
+%Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu.
+%$m$個の訓練データ$\qty(\vb*{x}^{(i)}, y^{(i)}),~i=1\ldots,m$が与えられたとする。$\vb*{x}^{(i)}=\qty[x_{1}^{(i)} , \ldots , x_{n}^{(i)}]^\T$は$n$個の成分を持つベクトルである。スカラーの基底関数を$\phi_{j} (\vb*{x}),~j=1,\ldots,k$とすれば、計画行列$X$の要素は$\qty(X)_{ij}= \phi_{j}\qty(\vb*{x}^{(i)})$である。$\vb*{\phi}\qty(\vb*{x}) = \qty[\phi_1(\vb*{x}) , \ldots , \phi_k(\vb*{x}) ]^\T,~\vb*{\theta} = \qty[\theta_1 , \ldots , \theta_k]^\T$として、訓練データによる$y$の推定量を$$\hat{y} =\displaystyle\sum_{j=1}^{k} \theta_j \phi_j \qty(\vb*{x}) =  \vb*{\theta}^\T \vb*{\phi} (\vb*{x}) $$と展開できるとする。さらに各訓練データ$\vb*{x}^{(i)}$に対してこの推定値を計算したものを$\hat{y}^{(i)}= \vb*{\theta}^\T \vb*{\phi} \qty(\vb*{x}^{(i)}) $とする。それを並べたベクトルを$\hat{\vb*{y}} = \qty[\hat{y}^{(1)} , \ldots , \hat{y}^{(m)}]^\T$と表記すれば、$\hat{\vb*{y}} = X \vb*{\theta}$と簡潔に書ける。
+
+  \section{ベイズ推定}
+  ベイズの定理を用いて、観測されたデータからその原因を確率論的な意味で推論することを\daiji{ベイズ推定}（Bayesian inference）とよぶ。ここでは最尤推定を紹介する。
+      %\subsection{ベイズの定理の意味}
+%事前確率（prior probability）とは、データを手に入れる前に想定していた確率のこと。事後確率（posterior probability）とは、データを用いて事前確率を修正（ベイズ修正）した結果の確率のこと。
+\begin{comment}
+いまあるデータ$D$を手に入れている。このデータがなぜ$D$という値を取ったのか、原因を推定したい。その仮説（hypothesis）を$H$とおくことにする。様々な原因が考えられ、中には互いに矛盾するものが含まれるだろう。目下のタスクはデータ$D$が得られたもとで原因が仮説$H$である確率を決めることである。ベイズの定理の式(\ref{eq : bayes_theorem})によれば、$D$が得られたもとで$H$である確率$P( H \mid D )$は次式で求められる。
+\begin{equation}
+ P( H \mid D ) = \frac{ P( D \mid H ) P( H ) }{ P( D ) }.
+\end{equation}
+ここで$P( H )$は\textbf{データを得る前に}原因が$H$であると想定した確率である。
+\end{comment}
+
+いま$R$という結果を手に入れている。この結果がなぜ$R$であったのか、原因を推定したい。様々な原因が考えられ、中には両立できないものも含まれるだろう。目下のタスクは、$R$という結果が得られたもとで原因が$C$であった確率を求めることである。
+
+ベイズの定理の式(\ref{eq : bayes_theorem})によれば、その確率$P( C \mid R )$は次式で求められる。
+\begin{equation}
+ P( C \mid R ) = \frac{ P( R \mid C ) P( C ) }{ P( R ) } \propto  P( R \mid C ) P( C ) . \label{eq : bayesian_inference}
+\end{equation}
+この式の分母に現れる$P( R ) = \sum_{C} P( R \mid C ) P( C )$は単に規格化定数であり、本質的ではない。
+
+ここで式(\ref{eq : bayesian_inference})の各確率の名称とその意味を整理する。
+\begin{itemize}
+  \item $P( C \mid R )$：\daiji{事後確率}（posterior probability）。$R$という結果が得られたもとで原因が$C$であった確率で、$C$の関数。
+  \item $P( C )$：\daiji{事前確率}（prior probability）。\textbf{結果を得る前に}原因が$C$であると想定した確率で、$C$の関数。
+  \item $ P( R \mid C ) $：\daiji{尤度}（likelihood）。原因が$C$と仮定した場合に結果として$R$が得られる確率で、もっともらしさを表している。$R$の関数。
+\end{itemize}
+
+式(\ref{eq : bayesian_inference})は、結果を得る前の確率（事前確率）に、新しい結果によって得られる尤度をかけることによって、よりもっともらしい確率（事後確率）に更新していることを意味している。\\
+
+
+\begin{comment}
+          \subsubsection*{クッキーボウルの例}
+%クッキーのたくさん詰まったボウルが２つある。
+ボウル１にはチョコチップクッキーが10枚、プレーンクッキーが30枚入っていて、ボウル２にはそれぞれ20枚ずつ入っている。ボウルをランダムにとり、中からランダムにクッキーを取り出したところ、プレーンであった。このときどちらのボウルが選ばれたのか？　ボウル１のほうがプレーンクッキーの割合が大きいので、直感的な答えはボウル１と予想できる。正確な答えをベイズ推定を用いて出そう。ボウル$ i = 1 , 2 $が選ばれる事象を$C_i$とし、「プレーンクッキーが出た」というデータを$R$とする。目的は$R$を得た状況下でのボウル１が選ばれた条件付き確率$P (C_1 \mid R)$を計算して、それが50\%より大きいのか小さいのかを評価することである。まずボウルを選ぶ確率はどちらも$P (C_1)=P(C_2)=50\%.~$ボウル１での$R$の確率は$P(R\mid C_1)=30/40=75\%,~$ボウル２での確率は$P(R \mid C_2)=20/40=50\%.~$これで計算する準備は整った。ベイズの定理の式(\ref{eq : bayes_theorem})あるいは式(\ref{eq : bayesian_inference})から
+\begin{eqnarray*}
+P (C_1 \mid R) &=& \frac{P(C_1)P(R\mid C_1)}{P (R)}=\frac{P(C_1)P(R\mid C_1)}{P(C_1)P(R\mid C_1)+P(C_2)P(R\mid C_2)} \\
+&=& \frac{50\% \times 75\%}{50\% \times 75\% + 50\% \times 50\%}=60\%.
+\end{eqnarray*}
+したがって初めボウル１が選ばれる確率は50\%と想定していたものが、データ$R$を得たことにより60\%に修正された。
+  \end{comment}
+
+  \begin{comment}
+$m$個のデータ$ \mathbb{X} = \qty{ \vb*{x}^{(1)} , \ldots , \vb*{x}^{(m)} }$が与えられたとき、データによって決まるパラメータが$\vb*{\theta}$という値をとりうる確率はベイズの定理の式(\ref{eq : bayes_theorem})より
+\begin{eqnarray}
+p \qty( \vb*{\theta} \mid \mathbb{X}) = \frac{ p \qty( \mathbb{X} \mid \vb*{\theta} ) p \qty( \vb*{\theta} ) }{ p \qty( \mathbb{X} ) } \propto p \qty( \mathbb{X} \mid \vb*{\theta} ) p \qty( \vb*{\theta}) \label{eq : posterior-1}
+\end{eqnarray}
+となる。中辺の分母は
+$$ p \qty( \mathbb{X} ) = \int p \qty( \mathbb{X} \mid \vb*{\theta} ) p \qty( \vb*{\theta} ) \dd{ \vb*{\theta} }$$
+で計算でき、これは$\vb*{\theta}$によらず、また$ \mathbb{X} = \qty{ \vb*{x}^{(1)} , \ldots , \vb*{x}^{(m)} }$の値は既知のものであるから、定数として扱ってよい。式(\ref{eq : posterior-1})の$p\qty(\vb*{\theta})$を事前確率（prior probability）、$p\qty(\vb*{\theta} \mid \mathbb{X} )$を事後確率（posterior probability）、$p\qty( \mathbb{X} \mid \vb*{\theta})$を尤度（likelihood）という。事前確率はデータを手に入れる前に想定していた確率であるのに対して、事後確率はデータを得たあとに事前確率を修正（ベイズ修正）したものである。式(\ref{eq : posterior-1})からもわかるように、ベイズ修正とは事前確率に尤度をかけて規格化し、よりもっともらしい分布に修正することである。
+\end{comment}
+
+      %\subsection{最尤推定}
+
+
+
+
+
+
+
+ここではニューラルネットワークに手書き数字の認識をさせることを目的として、$m$個の訓練データの集合を$\mathbb{X} = \qty{ \vb*{x}^{(1)} , \ldots , \vb*{x}^{(m)} }, ~$その各訓練データ$\vb*{x}^{(i)}$に対応したラベル$y^{(i)}$の集合を$\mathbb{Y} = \qty{ y^{(1)} , \ldots , y^{(m)} }$とする。
+$\vb{x}$と$\mathrm{y}$を確率変数として、以下３つの確率分布を扱う。
+\begin{itemize}
+  \item $\pdata{ \mathrm{y} \mid \vb{x} }$：$\vb{x}$と$\mathrm{y}$を生成する、真であるが未知の分布。
+  \item $\pmodel{ \mathbb{Y} \mid \mathbb{X} ; \vb*{ \theta } }$：$\mathbb{X}$が与えられたもとで$\mathbb{Y}$が得られる確率。これは$\vb*{ \theta }$をパラメータとして$\pdata{ \mathbb{Y} \mid \mathbb{X} }$を予測したもので、尤度に相当する。
+  \item $\phatdata{ \mathrm{y} \mid \vb{x} }$：訓練データ$\mathbb{X}$と$\mathbb{Y}$から得られた経験的な分布。得られたデータ$\qty(\vb*{x}^{(i)} , y^{(i)}) , ~ i = 1 , \ldots , m$のみで確率密度を持つような分布で、数式ではディラックのデルタ関数を用いて
+  \begin{equation*}
+  \phatdata{ \mathrm{y} = y \mid \vb{x} = \vb*{x} } = \frac{1}{m} \sum_{ i = 1}^{m} \delta \qty( \vb*{x} - \vb*{x}^{(i)} ) \delta \qty( y - y^{(i)} )
+  \end{equation*}
+  と表せる。
+\end{itemize}
+コンピュータは訓練集合$\qty{ \mathbb{X} , \mathbb{Y} }$からパラメータ$\vb*{ \theta }$を変化させることで$\pdata{ \mathbb{Y} \mid \mathbb{X} }$を尤度$\pmodel{ \mathbb{Y} \mid \mathbb{X} ; \vb*{ \theta } }$で近似する。この尤度に最大値を与えるパラメータの値$\hat{\vtheta}_{\mathrm{MLE}}$を最適値と考える推定方法を\daiji{最尤推定}（maximum likelihood estimation, \daiji{MLE}）といい、機械学習で用いられるベイズ推定の手法の一つである。 これを計算すると次のようになる。
+\begin{eqnarray}
+\hat{\vtheta}_{\mathrm{MLE}} &=& \argmax{\vtheta} \pmodel{ \mathbb{Y} \mid \mathbb{X} ; \vb*{ \theta } } \label{eq : definition}\\
+&=& \argmax{\vtheta} \prod_{i = 1}^{m} \pmodel{ y^{(i)} \mid \vb*{x}^{(i)} ; \vb*{ \theta } } \label{eq : iid}\\
+&=& \argmax{\vtheta} \sum_{i = 1}^{m} \log \pmodel{ y^{(i)} \mid \vb*{x}^{(i)} ; \vb*{ \theta } } \label{eq : log}\\
+&=& \argmax{\vtheta} \int \dd{\vb*{x}} \dd{y} \frac{1}{m} \sum_{i = 1}^{m} \delta \qty( \vb*{x} - \vb*{x}^{(i)} ) \delta \qty( y - y^{(i)} ) \log \pmodel{ y\mid \vb*{x} ; \vb*{ \theta } } \label{eq : delta}\\
+&=& \argmax{\vtheta} \mathbb{E}_{\vb{x}, \mathrm{y} \sim \hat{p}_{\mathrm{data}} } \qty[ \log \pmodel{ y\mid \vb*{x} ; \vb*{ \theta } } ] \label{eq : expectation}\\
+&=& \argmin{\vtheta} \mathbb{E}_{\vb{x}, \mathrm{y} \sim \hat{p}_{\mathrm{data}} } \qty[  - \log \pmodel{ y\mid \vb*{x} ; \vb*{ \theta } } ] .\label{eq : flipping}
+\end{eqnarray}
+(\ref{eq : definition})は最尤推定による推定値の定義である。(\ref{eq : definition})から(\ref{eq : iid})への変形は、訓練データが\daiji{独立同分布}（independent and identically distributed, i.i.d.）に従う、すなわち訓練データの各点は同一の分布$\pdata{ \mathrm{y} \mid \vb{x} }$から生成されるが、互いに独立であると仮定したため、$\pmodel{ \mathbb{Y} \mid \mathbb{X} ; \vb*{ \theta } }$は各訓練データの確率の総積で与えられる。(\ref{eq : iid})から(\ref{eq : log})へは、対数関数が単調増加であるから最大点は同じであることを利用した。そのため総積の記号$\prod$は総和の記号$\sum$に置き換わっている。それをディラックのデルタ関数を用いて表現したのが(\ref{eq : log})から(\ref{eq : delta})への変形である。ただし関数を定数倍してもその最大点自体は変化しないため$1 / m$をかけておいた。これは$\vb{x}$と$\mathrm{y}$が経験的な確率分布$\hat{p}_{\mathrm{data}}$に従うもとでの$\log \pmodel{ y\mid \vb*{x} ; \vb*{ \theta } }$の期待値である(\ref{eq : expectation})。最後に符号を反転させて$\argmax{\vtheta}$を$\argmin{\vtheta}$に置き換えた(\ref{eq : flipping})。式(\ref{eq : cross-entropy})を参照すればわかるように、最尤推定は交差エントロピー$ H\qty( \hat{p}_{\mathrm{data}} , p_{\mathrm{model}} )  = \mathbb{E}_{\vb{x}, \mathrm{y} \sim \hat{p}_{\mathrm{data}} } \qty[  - \log \pmodel{ y\mid \vb*{x} ; \vb*{ \theta } } ]$の最小化問題に帰着する。
+
+%\end{comment}
+
+  %    %\subsection{最大事後確率推定}
+ %   Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu.
+
+
+    \begin{comment}
+  \section{過学習の問題}
+      %\subsection{過学習・過小学習}
+    Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.
+
+      %\subsection{交差検証}
+    Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu.
+
+      %\subsection{正則化}
+最小二乗法での関数の推定においては、データの個数よりも近似する曲線の次数のほうが大きいときや、係数のベクトル$\vb*{w}=\qty[w_0,w_1,\ldots,w_{n}]^\mathsf{T}$の成分の値が大きくなると、過学習に陥りやすくなる。このことを防ぐために平均二乗誤差$\mathrm{MSE}(\vb*{w})$に重み減衰$\lambda \vb*{w}^\T \vb*{w}$を加えたもの$J(\vb*{w})=\mathrm{MSE}\qty(\vb*{w}) + \lambda \vb*{w}^\T \vb*{w}$を最小化することを考える。データの数を$m,~$データを$(x_i,y_i),~$目的関数を$n$次多項式$\hat{y}=w_0+w_1 x + w_2 x^2 + \cdots + w_{n} x^{n}=\displaystyle\sum_{k=0}^{n} w_k x^{k}$とし、この係数$\vb*{w}$を求める。行ベクトル${\vb*{x}_i}^{\mathsf{T}} = \qty[1,{x_i},{x_i}^2,\ldots,{x_i}^{n}]$を縦に並べた計画行列%行列
+$$X=\mqty[ {\vb*{x}_1}^{\mathsf{T}} \\ {\vb*{x}_1}^{\mathsf{T}} \\ \vdots \\ {\vb*{x}_{m}}^{\mathsf{T}}]=\mqty[ 1 & x_1 & {x_1}^2 & \ldots & {x_1}^{n} \\ 1 & x_2 & {x_2}^2 & \ldots & {x_2}^{n} \\ & & \vdots & &  \\1 & x_{m} & {x_{m}}^2 & \ldots & {x_{m}}^{n} ]$$
+と%（これは計画行列（design matrix）というのだった。日本語版教科書\cite{dl1}のp. 77.）
+、ベクトル$\vb*{y}=\qty[y_1,\ldots,y_m]^\mathsf{T}$を用いれば、$\pdv*{(\vb*{w}^\T \vb*{w})}{\vb*{w}}=2\vb*{w}$より
+$$\pdv{J(\vb*{w})}{\vb*{w}}=\pdv{\mathrm{MSE}(\vb*{w})}{\vb*{w}}+\pdv{\qty(\lambda \vb*{w}^\T \vb*{w} )}{\vb*{w}}= \frac{2}{m} \qty(X^\mathsf{T} X \vb*{w} - X^\mathsf{T} \vb*{y}) + 2\lambda \vb*{w}.$$
+これを$\vb*{0}$とすれば、$\vb*{w}$を変数とみた$(n+1)$本の連立方程式$\qty(X^\T X +m \lambda I)\vb*{w}=X^\T \vb*{y}$が得られる。$\lambda$の値を大きくしていくと、連立方程式におけるすべての対角成分$w_i$の係数が大きくなってゆく。しかし右辺の$X^\T \vb*{y}$はデータから得られる定ベクトルであるため、$w_i$の値は小さくならなければならない。ゆえに目的関数は多項式の丸みを生かせなくなり、直線に近い形となる。逆に$\lambda$の値が小さいときは$w_i$の値が大きくなるため目的関数はよく曲がるような、柔軟な曲線となる。このことはデータ点をすべて曲線で無理やり繋いでしまうような、過学習の状態になることを示している。中程度の値の$\lambda$を用いれば、過少適合も過剰適合も回避できるようになる。\\
+
+いま正則化項を$\lambda \norm{\vb*{w}}_2^2$としていたが、この線形回帰をリッジ回帰（Ridge regression）という。ほかにも正則化項を$\lambda \norm{\vb*{w}}_1^1$としたものや、$\norm{\vb*{w}}_2^2$と$\norm{\vb*{w}}_1^1$の線型結合としたものもあり、それぞれラッソ回帰（LASSO regression）、Elastic Netという。%\cite{aurelien}。正則化は最適化と並んで重要であるため、詳しくはまとめて第７章で勉強する。
+
+\end{comment}
+
+\end{document}

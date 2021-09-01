@@ -1,0 +1,222 @@
+%\documentclass{jsarticle}
+%\documentclass[draft]
+%\documentclass[dvipdfmx,autodetect-engine,draft]{jsarticle}% autodetect-engine で pLaTeX / upLaTeX を自動判定
+\documentclass[dvipdfmx,autodetect-engine]{jsarticle}% autodetect-engine で pLaTeX / upLaTeX を自動判定
+
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{url}
+\usepackage{bm}
+\usepackage{comment}
+%\usepackage{split}
+\usepackage{multirow}
+\usepackage{listings,jlisting}
+\usepackage{braket}
+\usepackage{physics}
+\usepackage{xparse,amsmath}
+\usepackage{here}
+\usepackage{enumerate}
+\usepackage{mathrsfs}
+%\usepackage{jlistings} %日本語のコメントアウトをする場合jlistingが必要
+\setcounter{tocdepth}{3}
+\usepackage{amsmath,amssymb}
+
+\usepackage{empheq}
+%\usepackage{qexam}
+
+
+%
+% proof environment without \qed
+%
+\makeatletter
+%\renewenvironment{proof}[1][\proofname]{\par
+\newenvironment{Proof}[1][\Proofname]{\par
+  \normalfont
+  \topsep6\p@\@plus6\p@ \trivlist
+  \item[\hskip\labelsep{\bfseries #1}\@addpunct{\bfseries.}]\ignorespaces
+}{%
+  \endtrivlist
+}
+%\renewcommand{\proofname}{証明}
+%\renewcommand{\proofname}{Proof}
+\newcommand{\Proofname}{証明}
+%\newcommand{\Proofname}{Proof}
+\makeatother
+%
+% \qed
+%
+\makeatletter
+\def\BOXSYMBOL{\RIfM@\bgroup\else$\bgroup\aftergroup$\fi
+  \vcenter{\hrule\hbox{\vrule height.85em\kern.6em\vrule}\hrule}\egroup}
+\makeatother
+\newcommand{\BOX}{%
+  \ifmmode\else\leavevmode\unskip\penalty9999\hbox{}\nobreak\hfill\fi
+  \quad\hbox{\BOXSYMBOL}}
+%\renewcommand\qed{\BOX}
+\newcommand\QED{\BOX}
+
+
+
+
+
+
+\usepackage{etoolbox}
+\AtBeginEnvironment{empheq}{%
+  \linespread{0.8}\selectfont\narrowbaselines
+}
+
+
+
+\begin{document}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+%立体の添え字とうえつき文字
+\newcommand{\bt}[3]{#1_{\R{#2}}^{\R{#3}}}
+\newcommand{\euni}[2]{\E{#1}\un{#2}}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+\def\x{\vb*{x}}
+\def\T{\mathsf{T}}
+
+\begin{flushright}
+\today\\
+慶應義塾大学理工学部物理学科\\
+岡崎健人
+\end{flushright}
+\begin{center}
+{\large 卒研ゼミ「深層学習」} 
+\end{center}
+%箇条書き
+%\tableofcontents   %👈目次
+%\newpage
+%2.6節
+\setcounter{section}{2}
+\section{確率と情報理論}
+\setcounter{subsection}{12}
+\subsection{情報理論}
+「地球は自転している」という情報よりも「明日地球に隕石が衝突する」という情報の方が意外性が高く、より大きな価値をもつ気がする。このような直感的な、「情報の価値」的なものを数学的に表現したい。具体的には
+\begin{itemize}
+ \item 起こりやすい事象の情報量は少なく、確実に起こる事象の情報量はないとする
+ \item 起こるのが珍しい事象ほど情報量は大きい
+ \item 独立な事象については情報量は足し算で表される。つまり「コイントスを２回行ったところ表が２回出た」という事象の情報は、「コイントスを１回行ったところ表が出た」という事象のそれよりも、２倍の大きさをもつ
+\end{itemize}
+というようなものを数式で表現する。この３つの性質を満たすためには次のような量を作ればよい。
+$$I(x)=-\log P(x).$$
+これを事象$\mathrm{x}=x$の自己情報量といい、対数の底は$e$で、単位はナット（nats）という。底を$2$にしたものの単位はビット（bits）あるいはシャノン（shannons）である。
+
+自己情報量は１つの事象のみについての情報量であるが、全体の情報量の平均をシャノン・エントロピーあるいは平均情報量という。
+$$H(\mathrm{x})=H(P)=\mathbb{E}_{\mathrm{x}\sim P} \qty[I(x)]=-\sum_{i} P(x_i) \log P(x_i).$$
+たとえば確率$p$で表が出るコインでコイントスをするときのシャノン・エントロピーは$H(P)=-p\log p - \qty(1-p) \log \qty(1-p)$となる。この関数を図示すると図\ref{figshannon_entropy}のようになり、$p=0,1$（結果が確実にわかっている）ときに$H(P)=0,~p=1/2$（結果は不確実）のときに最大値を取ることがわかる。一般に離散型確率変数に対する確率分布のシャノン・エントロピーが最大になるのは一様分布のときである。\\
+
+
+
+同じ確率変数$\mathrm{x}$に対して異なる確率分布$P(\mathrm{x})$と$Q(\mathrm{x})$があったとき、それらがどれほど異なるのかを表す量としてKLダイバージェンス（Kullback--Leibler divergence）がある。
+$$D_{\mathrm{KL}}\qty(P \| Q)=\mathbb{E}_{\mathrm{x}\sim P} \qty[\log \frac{P(x)}{Q(x)}]=\sum_{i} P(x_i) \log \frac{P(x_i)}{Q(x_i)}.$$
+KLダイバージェンスは非負の量であり、等号成立は$P$と$Q$が同じときである。よってこれは$P$と$Q$の距離のような概念と考えられるが、一般に$D_{\mathrm{KL}}\qty(P \| Q) \neq D_{\mathrm{KL}}\qty(Q \| P)$であるため距離の公理の１つ$d(x,y)=d(y,x)$を満たさず、距離と呼ぶのは正しくない。
+
+図\ref{KL}（原本の図3.6）にKLダイバージェンスの非対称性$D_{\mathrm{KL}}\qty(p \| q) \neq D_{\mathrm{KL}}\qty(q \| p)$による効果を示す。$p(x)$は２つのガウス分布の重ね合わせで、$q(x)$はある１つのガウス分布である。イメージとしてはそれぞれ
+\begin{eqnarray*}
+p(x) &=& \frac{1}{2\sqrt{2\pi}\sigma_0} \qty[\exp\qty(-\frac{\qty(x-\mu_0)^2}{{2\sigma_0}^2})+\exp\qty(-\frac{\qty(x+\mu_0)^2}{{2\sigma_0}^2})],\\
+q(x) &=& \frac{1}{\sqrt{2\pi}\sigma} \exp\qty(-\frac{\qty(x-\mu)^2}{{2\sigma}^2})
+\end{eqnarray*}
+のような関数としている。ここで$D_{\mathrm{KL}}\qty(p \| q)$と$D_{\mathrm{KL}}\qty(q \| p)$をそれぞれ計算するとどちらも定数$\mu_0,~\sigma_0$を含む$\mu,~\sigma$の関数になるが、その関数形は異なっているはずである。したがって$D_{\mathrm{KL}}\qty(p \| q)$と$D_{\mathrm{KL}}\qty(q \| p)$を最小にする$\mu,~\sigma$の値も異なり、結果として$q^\ast$の形は図\ref{KL}（原本の図3.6）のように違いが生じる。ただし図\ref{KL}の右側のグラフでは、$q^\ast$の平均$\mu$が$-\mu_0$に一致している状況を描いていて、それは$\mu_0$としても$D_{\mathrm{KL}}\qty(q \| p)$の値は変わらない。ここでは高さの同じ２つのガウス関数が混じった分布を、KLダイバージェンスを尺度として、１つのガウス分布で近似するということをしている。高さが同じであったので少しわかりにくかったが、たとえば$p(x)$の片方のピークが十分小さいときには「ちょっとイビツなガウス分布」を「完璧なガウス分布」で近似することができるため、役に立つ方法といえる。そのときに$D_{\mathrm{KL}}\qty(p \| q)$と$D_{\mathrm{KL}}\qty(q \| p)$のどちらを選ぶかが重要になる。
+%2枚の図
+\begin{figure}[htbp]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+\includegraphics[width=60mm]{shannon.png}
+  \end{center}
+  \caption{ベルヌーイ分布のシャノン・エントロピー}
+  \label{shannon}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+\includegraphics[width=80mm]{KL.png}
+  \end{center}
+  \caption{KLダイバージェンスの非対称性}
+  \label{KL}
+ \end{minipage}
+\end{figure}\\
+
+また
+$$H(P,Q)=H(P)+D_{\mathrm{KL}}\qty(P \| Q)$$
+という量を交差エントロピーという。これを少し式変形をすると
+\begin{eqnarray*}
+H(P,Q) &=& H(P)+D_{\mathrm{KL}}\qty(P \| Q) \\
+&=& -\sum_{i} P(x_i) \log P(x_i) + \sum_{i} P(x_i) \log \frac{P(x_i)}{Q(x_i)} \\
+&=& -\sum_{i} P(x_i) \log Q(x_i) 
+\end{eqnarray*}
+となり、これは$\mathrm{x}\sim P$のもとでの$Q(x)$のシャノン・エントロピー$\mathbb{E}_{\mathrm{x}\sim P} \qty[-\log Q(x)]$を表していることがわかる。KLダイバージェンスと比較して取り除かれている部分$\sum_{i} P(x_i) \log P(x_i)$は$Q$に依存しないため、交差エントロピーを$Q$に関して最小化することはKLダイバージェンスを最小化することと等価である。\\
+
+計算をするなかで$0 \log 0$の形の式が現れるが、これは$\displaystyle\lim_{x \to 0^{+}} x \log x=0$と解釈する。
+
+
+\subsection*{証明}
+ \begin{Proof}[自己情報量が$-\log P(x)$の形になることの証明{\cite{情報理論入門}}]情報量$f$に要求される性質は$P$と$Q$を$\qty[0,1]$内の変数として
+\begin{empheq}[left={\empheqlbrace}]{align}
+ f(PQ)  &= f (P) + f(Q),\nonumber \\
+f(1)  &= 0, \nonumber \\
+f(P) &>0~~~\mathrm{for}~P\in [0,1)\nonumber  
+\end{empheq}
+と書き表わせる。$\epsilon$を正の微小定数として、$Q=1-\epsilon$とする。$f(P(1-\epsilon))=f(P-\epsilon P)$を$\epsilon=0$まわりでテイラー展開すると
+$$f(P-\epsilon P)=f(P)-\epsilon P \dv{f(P)}{P}+\order{\epsilon^2}$$
+となることから、$f(P(1-\epsilon))=f(P)+f(1-\epsilon)$より
+$$f(1-\epsilon) \approx -\epsilon P \dv{f(P)}{P}.~~~~~\therefore ~ \dv{f(P)}{P} \approx -\frac{1}{P} \frac{f(1-\epsilon)}{\epsilon} \xrightarrow{\epsilon \rightarrow 0}-\frac{k}{P},$$
+ただし$f(1-\epsilon)/\epsilon$の$\epsilon \rightarrow 0$における極限を$k$とおいた。よって$f$に関する微分方程式が得られたのでこれを解くと$f(P)=-k\log P + C$となる。$f(1)=0$より積分定数はゼロであることがわかるので、$f(P)=-k\log P,~f(P)\ge 0$より$k$は正の定数であればよい。
+
+
+\QED
+\end{Proof}
+
+ \begin{Proof}[KLダイバージェンスの非負性$D_{\mathrm{KL}}\qty(P \| Q)\ge 0$の証明\cite{情報エントロピー論}]
+ 一般に$y>0$に対して$\log y \le y-1$である。$y$を$Q(x_i)/P(x_i)$とすれば
+ $$\log \frac{Q(x_i)}{P(x_i)} \le \frac{Q(x_i)}{P(x_i)} -1.$$
+ 両辺に$-P(x_i)$をかけることにより
+ $$P(x_i) \log \frac{P(x_i)}{Q(x_i)} \ge  P(x_i) - Q(x_i)$$
+ を得る。両辺の総和をとれば
+  $$\sum_{i}P(x_i) \log \frac{P(x_i)}{Q(x_i)} \ge \sum_{i} P(x_i) - \sum_{i}Q(x_i)=1-1=0$$
+  より$D_{\mathrm{KL}}\qty(P \| Q)\ge 0$が示された。なお等号が成立するのは$\log y = y-1$を解いて$y=1$であるとき、すなわち$P(x_i)=Q(x_i)$となるときである。
+\QED
+\end{Proof}
+
+\begin{Proof}[$\displaystyle\lim_{x \to 0^{+}} x \log x=0$の証明]
+$$
+\lim_{x \to 0^{+}} x\log x = -\lim_{x \to 0^{+}}\frac{-\log x}{1/x} = -\lim_{x \to 0^{+}} \frac{-1/x}{-1/x^2}=-\lim_{x \to 0^{+}} x = 0^{-}.
+$$
+途中で$\infty / \infty$の不定形が現れるのでロピタルの定理を用いた。
+\QED
+\end{Proof}
+
+\begin{Proof}[「シャノン・エントロピーが最大となるのは一様分布のとき」の証明]
+第４章で最大化（最小化）問題を扱う場面があるので、ラグランジュの未定乗数法の復習を兼ねて載せておく。離散型確率変数$i=1,2,\ldots,n$に対する確率を$p_i$とする。シャノン・エントロピーは
+$$H(p_1,p_2,\ldots,p_n)=H(\vb*{p})=-\sum_{i=1}^{n} p_i \log p_i,$$
+ただし確率の総和が$1$であるという制約が付いている。
+$$\sum_{i=1}^{n} p_i - 1=0.$$
+なお確率を並べたベクトルを$\vb*{p}=\qty[p_1,p_2,\ldots,p_n]^\mathsf{T}$とした。この等式制約のもとでの最大化問題はラグランジュの未定乗数法を用いて解くことができる。ラグランジュ乗数を$\lambda$として、ラグランジュ関数を
+$$L(\vb*{p},\lambda)=-\sum_{i=1}^{n} p_i \log p_i+\lambda\qty(\sum_{i=1}^{n} p_i - 1)$$
+と作る。このとき
+\begin{empheq}[left={\empheqlbrace}]{align}
+ \pdv{L}{\vb*{p}}  &= \vb*{0},\nonumber \\
+ \pdv{L}{\lambda}  &= 0\nonumber 
+\end{empheq}
+という条件を満たす点$(\vb*{p},\lambda)$が$H(\vb*{p})$の最大値を与える。具体的には
+\begin{empheq}[left={\empheqlbrace}]{align}
+ \pdv{L}{p_i}  &= -\log p_i-1+\lambda=0,~~~~~i=1,2,\ldots,n,\nonumber \\
+ \pdv{L}{\lambda}  &=\sum_{i=1}^{n} p_i - 1=0 ,\nonumber 
+\end{empheq}
+となる。第１式より$p_i = e^{\lambda - 1},~$これを第２式に代入することで$n e^{\lambda - 1}-1=0$となるので$e^{\lambda - 1}=p_i=1/n$が得られる。したがってシャノン・エントロピーを最大にする離散型確率分布は一様分布である。
+
+\QED
+\end{Proof}
+
+
+
+
+\begin{thebibliography}{9}
+   \bibitem{情報理論入門} 赤間世紀.「情報理論入門」．株式会社工学社，2010年，pp. 9--12.
+   \bibitem{情報エントロピー論} 堀部安一．「情報エントロピー論」．第２版，森北出版株式会社，1997年．pp. 85--92.
+\end{thebibliography}
+
+\end{document}
